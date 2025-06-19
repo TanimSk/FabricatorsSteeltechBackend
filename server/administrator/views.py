@@ -1,0 +1,242 @@
+from django.shortcuts import render, HttpResponse
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import BasePermission
+from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
+from dj_rest_auth.registration.views import RegisterView
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.utils import timezone
+
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
+# models
+from fabricator.models import Fabricator
+from marketing_rep.models import MarketingRepresentative
+from distributor.models import Distributor
+
+# serializers
+from fabricator.serializers import FabricatorSerializer
+from marketing_rep.serializers import MarketingRepresentativeSerializer
+from distributor.serializers import DistributorSerializer
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 500
+    page_query_param = "p"
+
+
+# Authenticate User Only Class
+class AuthenticateOnlyAdmin(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            raise PermissionDenied("User is not authenticated.")
+
+        if not getattr(request.user, "is_admin", False):
+            raise PermissionDenied("User is not an admin.")
+
+        return True
+
+
+class FabricatorView(APIView):
+    permission_classes = [AuthenticateOnlyAdmin]
+
+    def get(self, request, *args, **kwargs):
+        if request.query_params.get("id"):
+            fabricator_id = request.query_params.get("id")
+            try:
+                fabricator = Fabricator.objects.get(id=fabricator_id)
+                serializer = FabricatorSerializer(fabricator)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Fabricator.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Fabricator not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        if request.query_params.get("view") == "pending":
+            fabricators = Fabricator.objects.filter(status="pending").order_by(
+                "-created_at"
+            )
+
+        elif request.query_params.get("view") == "approved":
+            fabricators = Fabricator.objects.filter(status="approved").order_by(
+                "-created_at"
+            )
+        elif request.query_params.get("view") == "rejected":
+            fabricators = Fabricator.objects.filter(status="rejected").order_by(
+                "-created_at"
+            )
+
+        else:
+            return JsonResponse(
+                {"success": False, "message": "Invalid view parameter."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(fabricators, request)
+        serializer = FabricatorSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+class MarketingRepresentativeView(APIView):
+    permission_classes = [AuthenticateOnlyAdmin]
+
+    def get(self, request, *args, **kwargs):
+        if request.query_params.get("id"):
+            rep_id = request.query_params.get("id")
+            try:
+                rep = MarketingRepresentative.objects.get(id=rep_id)
+                serializer = MarketingRepresentativeSerializer(rep)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        reps = MarketingRepresentative.objects.filter(status="pending").order_by(
+            "-created_at"
+        )
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(reps, request)
+        serializer = MarketingRepresentativeSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = MarketingRepresentativeSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, *args, **kwargs):
+        rep_id = request.query_params.get("id")
+        if not rep_id:
+            return JsonResponse(
+                {"success": False, "message": "ID parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            rep = MarketingRepresentative.objects.get(id=rep_id)
+        except MarketingRepresentative.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Marketing Representative not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = MarketingRepresentativeSerializer(rep, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {"success": False, "message": "Invalid data."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, *args, **kwargs):
+        rep_id = request.query_params.get("id")
+        if not rep_id:
+            return JsonResponse(
+                {"success": False, "message": "ID parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            rep = MarketingRepresentative.objects.get(id=rep_id)
+            rep.delete()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Marketing Representative deleted successfully.",
+                },
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except MarketingRepresentative.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Marketing Representative not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class DistributorView(APIView):
+    permission_classes = [AuthenticateOnlyAdmin]
+
+    def get(self, request, *args, **kwargs):
+        if request.query_params.get("id"):
+            distributor_id = request.query_params.get("id")
+            try:
+                distributor = Distributor.objects.get(id=distributor_id)
+                serializer = DistributorSerializer(distributor)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Distributor.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Distributor not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        distributors = Distributor.objects.all().order_by("-created_at")
+        paginator = StandardResultsSetPagination()
+        result_page = paginator.paginate_queryset(distributors, request)
+        serializer = DistributorSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = DistributorSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, *args, **kwargs):
+        distributor_id = request.query_params.get("id")
+        if not distributor_id:
+            return JsonResponse(
+                {"success": False, "message": "ID parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            distributor = Distributor.objects.get(id=distributor_id)
+        except Distributor.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Distributor not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = DistributorSerializer(distributor, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {"success": False, "message": "Invalid data."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, *args, **kwargs):
+        distributor_id = request.query_params.get("id")
+        if not distributor_id:
+            return JsonResponse(
+                {"success": False, "message": "ID parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            distributor = Distributor.objects.get(id=distributor_id)
+            distributor.delete()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Distributor deleted successfully.",
+                },
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Distributor.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Distributor not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
