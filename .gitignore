@@ -1,1 +1,15 @@
 venv/
+db.sqlite3
+**/db.sqlite3
+
+server/fabricator/migrations/*
+server/distributor/migrations/*
+server/administrator/migrations/*
+server/marketing_rep/migrations/*
+
+!server/fabricator/migrations/__init__.py
+!server/distributor/migrations/__init__.py
+!server/administrator/migrations/__init__.py
+!server/marketing_rep/migrations/__init__.py
+
+.DS_Store
