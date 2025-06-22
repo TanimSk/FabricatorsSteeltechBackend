@@ -80,8 +80,10 @@ class FabricatorView(APIView):
             )
 
         elif request.query_params.get("view") == "approved":
-            fabricators = Fabricator.objects.filter(status="approved").order_by(
-                "-created_at"
+            fabricators = (
+                Fabricator.objects.filter(status="approved")
+                .order_by("-created_at")
+                .exclude(marketing_representative__isnull=True)
             )
         elif request.query_params.get("view") == "rejected":
             fabricators = Fabricator.objects.filter(status="rejected").order_by(
@@ -89,6 +91,10 @@ class FabricatorView(APIView):
             )
         elif request.query_params.get("view") == "all":
             fabricators = Fabricator.objects.all().order_by("-created_at")
+        elif request.query_params.get("view") == "assigned":
+            fabricators = Fabricator.objects.filter(
+                marketing_representative__isnull=False
+            ).order_by("-created_at")
 
         else:
             return JsonResponse(
@@ -164,6 +170,25 @@ class FabricatorView(APIView):
                         "message": "Marketing Representative not found.",
                     },
                     status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # check if the fabricator is already assigned to a marketing representative
+            if fabricator.marketing_representative:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Fabricator is already assigned to a Marketing Representative.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # check if the fabricator is approved
+            if fabricator.status != "approved":
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Fabricator must be approved before assigning a Marketing Representative.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             fabricator.marketing_representative = marketing_rep
             fabricator.save()
