@@ -14,6 +14,8 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
+import csv
+
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -410,7 +412,14 @@ class ReportView(APIView):
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(report, request)
             serializer = ReportsSerializer(
-                result_page, many=True, hide_fields=["marketing_rep_name"]
+                result_page,
+                many=True,
+                hide_fields=[
+                    "distributor_name",
+                    "distributor_phone_number",
+                    "distributor_district",
+                    "distributor_sub_district",
+                ],
             )
             return paginator.get_paginated_response(serializer.data)
 
@@ -427,6 +436,10 @@ class ReportView(APIView):
                 many=True,
                 hide_fields=[
                     "fabricator_name",
+                    "fabricator_registration_number",
+                    "fabricator_phone_number",
+                    "fabricator_district",
+                    "fabricator_sub_district",
                 ],
             )
             return paginator.get_paginated_response(serializer.data)
@@ -434,3 +447,91 @@ class ReportView(APIView):
             {"success": False, "message": "Invalid view parameter."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    def post(self, request, *args, **kwargs):
+        from_date = request.data.get("from_date")
+        to_date = request.data.get("to_date")
+
+        if from_date and to_date:
+            try:
+                from_date = timezone.datetime.fromisoformat(from_date)
+                to_date = timezone.datetime.fromisoformat(to_date)
+            except ValueError:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid date format. Use ISO format (YYYY-MM-DD).",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if request.query_params.get("action") == "csv":
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = (
+                f'attachment; filename="report-{timezone.now().strftime("%Y-%m-%d")}.csv"'
+            )
+            writer = csv.writer(response)
+
+            if request.query_params.get("view") == "fabricators":
+                reports = Reports.objects.all().order_by("-sales_date")
+                if from_date and to_date:
+                    report = report.filter(sales_date__range=(from_date, to_date))
+                writer.writerow(
+                    [
+                        "Fabricator Name",
+                        "Registration Number",
+                        "Phone Number",
+                        "District",
+                        "Sub-District",
+                        "Sales Date",
+                        "Amount",
+                        "Invoice Number",
+                    ]
+                )
+
+                for report in reports:
+                    writer.writerow(
+                        [
+                            report.fabricator.name,
+                            report.fabricator.registration_number,
+                            report.fabricator.phone_number,
+                            report.fabricator.district,
+                            report.fabricator.sub_district,
+                            report.sales_date.strftime("%Y-%m-%d"),
+                            report.amount,
+                            report.invoice_number,
+                        ]
+                    )
+
+                return response
+
+            elif request.query_params.get("view") == "marketing_representatives":
+                reports = Reports.objects.all().order_by("-sales_date")
+                if from_date and to_date:
+                    report = report.filter(sales_date__range=(from_date, to_date))
+                writer.writerow(
+                    [
+                        "Marketing Representative Name",
+                        "Phone Number",
+                        "District",
+                        "Sub-District",
+                        "Sales Date",
+                        "Amount",
+                        "Invoice Number",
+                    ]
+                )
+
+                for report in reports:
+                    writer.writerow(
+                        [
+                            report.marketing_rep.name,
+                            report.marketing_rep.phone_number,
+                            report.marketing_rep.district,
+                            report.marketing_rep.sub_district,
+                            report.sales_date.strftime("%Y-%m-%d"),
+                            report.amount,
+                            report.invoice_number,
+                        ]
+                    )
+
+                return response

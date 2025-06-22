@@ -24,11 +24,46 @@ class MarketingRepresentativeSerializer(serializers.ModelSerializer):
 
 
 class ReportsSerializer(serializers.ModelSerializer):
+    # marketing representative
     marketing_rep_name = serializers.CharField(
         source="marketing_rep.name", read_only=True
     )
+    marketing_rep_phone_number = serializers.CharField(
+        source="marketing_rep.phone_number", read_only=True
+    )
+    marketing_rep_district = serializers.CharField(
+        source="marketing_rep.district", read_only=True
+    )
+    marketing_rep_sub_district = serializers.CharField(
+        source="marketing_rep.sub_district", read_only=True
+    )
+
+    # fabricator
     fabricator_name = serializers.CharField(source="fabricator.name", read_only=True)
+    fabricator_registration_number = serializers.CharField(
+        source="fabricator.registration_number", read_only=True
+    )
+    fabricator_phone_number = serializers.CharField(
+        source="fabricator.phone_number", read_only=True
+    )
+    fabricator_district = serializers.CharField(
+        source="fabricator.district", read_only=True
+    )
+    fabricator_sub_district = serializers.CharField(
+        source="fabricator.sub_district", read_only=True
+    )
+
+    # distributor
     distributor_name = serializers.CharField(source="distributor.name", read_only=True)
+    distributor_phone_number = serializers.CharField(
+        source="distributor.phone_number", read_only=True
+    )
+    distributor_district = serializers.CharField(
+        source="distributor.district", read_only=True
+    )
+    distributor_sub_district = serializers.CharField(
+        source="distributor.sub_district", read_only=True
+    )
 
     class Meta:
         model = Reports

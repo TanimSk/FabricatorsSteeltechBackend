@@ -29,7 +29,7 @@ class Reports(models.Model):
     """
     Model representing a report submitted by a Marketing Representative.
     """
-
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     marketing_rep = models.ForeignKey(
         MarketingRepresentative,
         on_delete=models.CASCADE,

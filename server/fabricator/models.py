@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+from datetime import date
+import random
 
 
 class Fabricator(models.Model):
@@ -11,6 +13,7 @@ class Fabricator(models.Model):
     name = models.CharField(max_length=512)
     institution = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
+    registration_number = models.CharField(max_length=255, blank=True, null=True)
     district = models.CharField(max_length=255)
     sub_district = models.CharField(max_length=255)
     address = models.CharField(max_length=512, blank=True, null=True)
@@ -46,3 +49,9 @@ class Fabricator(models.Model):
         default="pending",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # create a unique registration number
+    def save(self, *args, **kwargs):
+        if not self.registration_number:
+            self.registration_number = f"{str(date.today().year)[-1:]}{random.randint(0, 9)}{str(Fabricator.objects.count() + 1).zfill(4)}"
+        super().save(*args, **kwargs)
