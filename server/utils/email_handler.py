@@ -20,7 +20,7 @@ class EmailThread(threading.Thread):
         self.subject = subject
         self.recipient_list = recipient_list
         self.html_content = html_content
-        self.sender = f"RA Physics <{sender}>"
+        self.sender = f"Steeltech <{sender}>"
         self.images = images
         self.pdfs = pdfs
         threading.Thread.__init__(self)
@@ -56,14 +56,10 @@ def send_html_mail(
 
 
 def send_login_credentials(
-    username,
+    username: str,
     email: str,
-    password,
+    password: str,
 ):
-
-    if "ignore.com" in email:
-        print("Skipping email sending for example.com domain.")
-        return
 
     html_content = render_to_string(
         "login_credentials.html",
@@ -73,7 +69,7 @@ def send_login_credentials(
             "user_password": password,
         },
     )
-    subject = "Your login credentials - RA Physics"
+    subject = "Your login credentials - Steeltech"
 
     EmailThread(
         subject,

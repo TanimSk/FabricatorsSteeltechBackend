@@ -200,13 +200,12 @@ REST_USE_JWT = True
 
 ############################ All Auth Config ############################
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_USE_TLS = True
-EMAIL_HOST = "live.smtp.mailtrap.io"
-EMAIL_PORT = 2525
-EMAIL_HOST_USER = "smtp@mailtrap.io"
-EMAIL_HOST_PASSWORD = "f1ba2e3fa8d5430115522749bece9f77"
-DEFAULT_FROM_EMAIL = "noreply@ra-physics.space"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL = "noreply.service.tanimsk@gmail.com"
+EMAIL_HOST_PASSWORD = "igcosdywfsqodffg"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 

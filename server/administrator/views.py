@@ -28,6 +28,7 @@ from distributor.models import Distributor
 from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import MarketingRepresentativeSerializer
 from distributor.serializers import DistributorSerializer
+from utils.email_handler import send_login_credentials
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -166,6 +167,14 @@ class MarketingRepresentativeView(APIView):
             )
 
             serializer.save(marketing_rep=user_instance)
+
+            # send email to the marketing representative with login credentials
+            send_login_credentials(
+                username=serializer.validated_data["name"],
+                email=serializer.validated_data["email"],
+                password=random_password,
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
