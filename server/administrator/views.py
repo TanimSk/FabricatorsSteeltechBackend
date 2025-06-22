@@ -105,7 +105,7 @@ class FabricatorView(APIView):
                 {"success": False, "message": "Fabricator not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if status not in ["pending", "approved", "rejected"]:
+        if fstatus not in ["pending", "approved", "rejected"]:
             return JsonResponse(
                 {"success": False, "message": "Invalid status."},
                 status=status.HTTP_400_BAD_REQUEST,
