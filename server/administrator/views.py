@@ -139,7 +139,7 @@ class MarketingRepresentativeView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        reps = MarketingRepresentative.objects.filter(status="pending").order_by(
+        reps = MarketingRepresentative.objects.all().order_by(
             "-created_at"
         )
         paginator = StandardResultsSetPagination()
