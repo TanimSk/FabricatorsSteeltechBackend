@@ -76,6 +76,8 @@ class FabricatorView(APIView):
             fabricators = Fabricator.objects.filter(status="rejected").order_by(
                 "-created_at"
             )
+        elif request.query_params.get("view") == "all":
+            fabricators = Fabricator.objects.all().order_by("-created_at")
 
         else:
             return JsonResponse(
@@ -87,6 +89,35 @@ class FabricatorView(APIView):
         result_page = paginator.paginate_queryset(fabricators, request)
         serializer = FabricatorSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+    def patch(self, request, *args, **kwargs):
+        fabricator_id = request.data.get("id")
+        status = request.data.get("status")
+        if not fabricator_id or not status:
+            return JsonResponse(
+                {"success": False, "message": "ID and status parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            fabricator = Fabricator.objects.get(id=fabricator_id)
+        except Fabricator.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": "Fabricator not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if status not in ["pending", "approved", "rejected"]:
+            return JsonResponse(
+                {"success": False, "message": "Invalid status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        fabricator.status = status
+        fabricator.save()
+        serializer = FabricatorSerializer(fabricator)
+        return Response({
+            "success": True,
+            "message": "Fabricator status updated successfully.",
+            **serializer.data,
+        }, status=status.HTTP_200_OK)
 
 
 class MarketingRepresentativeView(APIView):
