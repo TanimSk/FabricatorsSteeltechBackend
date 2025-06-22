@@ -10,6 +10,8 @@ from dj_rest_auth.registration.views import RegisterView
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils import timezone
+import requests
+from django.conf import settings
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -240,3 +242,45 @@ class DistributorView(APIView):
                 {"success": False, "message": "Distributor not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+
+# file upload
+class UploadFile(APIView):
+    def post(self, request):
+        file = request.FILES.get("file")
+        if not file:
+            return Response(
+                {"success": False, "message": "No file provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        url = "https://transfer.ongshak.com/upload/"
+        params = {
+            "key": settings.TRANSFER_ONGSHAK_API_KEY,
+            "path": "article39",
+        }
+
+        # if file size exceeds 20MB, return error
+        if file.size > 20 * 1024 * 1024:
+            return Response(
+                {"success": False, "message": "File size exceeds 20MB"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # if file size is an image, and greater than 2MB, set compression level to 50
+        if file.size > 2 * 1024 * 1024 and file.name.lower().endswith(
+            (".jpg", ".jpeg", ".png")
+        ):
+            params["compression_level"] = "50"
+
+        response = requests.post(url, params=params, files={"file": file})
+
+        print(response.text)
+
+        return Response(
+            {
+                "success": True,
+                **response.json(),
+            },
+            status=status.HTTP_201_CREATED,
+        )

@@ -27,6 +27,7 @@ from dj_rest_auth.views import (
 )
 from django.views.generic import TemplateView
 from administrator.auth_views import LoginWthPermission, CustomPasswordChangeView
+from administrator.views import UploadFile
 
 
 urlpatterns = [
@@ -67,4 +68,6 @@ urlpatterns = [
     path("fabricator/", include("fabricator.urls")),
     path("marketing-rep/", include("marketing_rep.urls")),
     path("distributor/", include("distributor.urls")),
+    # ---------- File Upload ------------
+    path("upload-file/", UploadFile.as_view(), name="upload_file"),
 ]
