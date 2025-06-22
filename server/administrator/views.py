@@ -155,6 +155,18 @@ class MarketingRepresentativeView(APIView):
         serializer = MarketingRepresentativeSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
 
+            # check if a marketing representative with the same email already exists
+            if MarketingRepresentative.objects.filter(
+                email=serializer.validated_data["email"]
+            ).exists():
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "A marketing representative with this email already exists.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             # create a new user for the marketing representative with password
             User = get_user_model()
             random_password = get_random_string(length=6)
@@ -175,7 +187,11 @@ class MarketingRepresentativeView(APIView):
                 password=random_password,
             )
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({
+                "success": True,
+                "message": "Marketing Representative created successfully. Login credentials have been sent to the email.",
+                **serializer.data,
+            }, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
         rep_id = request.query_params.get("id")
