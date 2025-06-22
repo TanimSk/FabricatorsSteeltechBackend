@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Credentials - Steeltech</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #121212;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #2d2d2d;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: #e69c34;
+            margin: 0;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            color: #ffffff;
+            margin-bottom: 30px;
+        }
+
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: rgb(194, 194, 194);
+        }
+
+        .credentials {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #333;
+            color: #fff;
+        }
+
+        .credentials p {
+            margin: 0 0 10px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            text-align: center;
+            color: #aaaaaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>
+                Steeltech
+            </h1>
+        </div>
+        <div class="title">Steeltech Marketing Rep. login credentials</div>
+        <div class="content">
+            <p>Hi {{ user_name }},</p>
+            <p>
+                A fabricator has been assigned to you. You can see the fabricator in your mobile app's sales report
+                section.
+                Below are the fabricator's info:
+            </p>
+            <div class="credentials">
+                <p><strong>Name:</strong> <span style="color: white;">{{ fab_name }}<span></p>
+                <p><strong>Phone Number:</strong> {{ fab_phone_number }}</p>
+                <p><strong>Registration Number:</strong> {{ fab_registration_number }}</p>
+                <p><strong>District:</strong> {{ fab_district }}</p>
+                <p><strong>Sub-District:</strong> {{ fab_sub_district }}</p>
+            </div>
+        </div>
+        <div class="footer">
+            &copy; 2025 Steeltech All rights reserved.
+        </div>
+    </div>
+</body>
+
+</html>

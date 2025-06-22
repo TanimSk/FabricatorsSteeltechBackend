@@ -33,7 +33,10 @@ from marketing_rep.serializers import (
     ReportsSerializer,
 )
 from distributor.serializers import DistributorSerializer
-from utils.email_handler import send_login_credentials
+from utils.email_handler import (
+    send_login_credentials,
+    send_marketing_rep_assigned_notification,
+)
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -99,36 +102,90 @@ class FabricatorView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
-        fabricator_id = request.data.get("id")
-        fstatus = request.data.get("status")
-        if not fabricator_id or not fstatus:
+        if request.query_params.get("action") == "status":
+            fabricator_id = request.data.get("id")
+            fstatus = request.data.get("status")
+            if not fabricator_id or not fstatus:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "ID and status parameters are required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                fabricator = Fabricator.objects.get(id=fabricator_id)
+            except Fabricator.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Fabricator not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            if fstatus not in ["pending", "approved", "rejected"]:
+                return JsonResponse(
+                    {"success": False, "message": "Invalid status."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            fabricator.status = fstatus
+            fabricator.save()
+            serializer = FabricatorSerializer(fabricator)
             return JsonResponse(
-                {"success": False, "message": "ID and status parameters are required."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "success": True,
+                    "message": "Fabricator status updated successfully.",
+                    **serializer.data,
+                },
+                status=status.HTTP_200_OK,
             )
-        try:
-            fabricator = Fabricator.objects.get(id=fabricator_id)
-        except Fabricator.DoesNotExist:
+        if request.query_params.get("action") == "assign":
+            fabricator_id = request.data.get("id")
+            marketing_rep_id = request.data.get("marketing_rep_id")
+
+            if not fabricator_id or not marketing_rep_id:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Fabricator ID and Marketing Representative ID are required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                fabricator = Fabricator.objects.get(id=fabricator_id)
+            except Fabricator.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Fabricator not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            try:
+                marketing_rep = MarketingRepresentative.objects.get(id=marketing_rep_id)
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            fabricator.marketing_representative = marketing_rep
+            fabricator.save()
+            serializer = FabricatorSerializer(fabricator)
+
+            # send email notification to the marketing representative
+            send_marketing_rep_assigned_notification(
+                fab_name=fabricator.name,
+                fab_phone_number=fabricator.phone_number,
+                fab_registration_number=fabricator.registration_number,
+                fab_district=fabricator.district,
+                fab_sub_district=fabricator.sub_district,
+                marketing_rep_email=marketing_rep.email,
+            )
             return JsonResponse(
-                {"success": False, "message": "Fabricator not found."},
-                status=status.HTTP_404_NOT_FOUND,
+                {
+                    "success": True,
+                    "message": "Marketing Representative assigned to Fabricator successfully.",
+                    **serializer.data,
+                },
+                status=status.HTTP_200_OK,
             )
-        if fstatus not in ["pending", "approved", "rejected"]:
-            return JsonResponse(
-                {"success": False, "message": "Invalid status."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        fabricator.status = fstatus
-        fabricator.save()
-        serializer = FabricatorSerializer(fabricator)
-        return JsonResponse(
-            {
-                "success": True,
-                "message": "Fabricator status updated successfully.",
-                **serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
 
 
 class MarketingRepresentativeView(APIView):

@@ -77,3 +77,31 @@ def send_login_credentials(
         [email],
         DEFAULT_FROM_EMAIL,
     ).start()
+
+
+def send_marketing_rep_assigned_notification(
+    fab_name: str,
+    fab_phone_number: str,
+    fab_registration_number: str,
+    fab_district: str,
+    fab_sub_district: str,
+    marketing_rep_email: str,
+):
+    html_content = render_to_string(
+        "fabricator_assigned.html",
+        {
+            "fab_name": fab_name,
+            "fab_phone_number": fab_phone_number,
+            "fab_registration_number": fab_registration_number,
+            "fab_district": fab_district,
+            "fab_sub_district": fab_sub_district,
+        },
+    )
+    subject = "New Fabricator Assigned - Steeltech"
+
+    EmailThread(
+        subject,
+        html_content,
+        [marketing_rep_email],
+        DEFAULT_FROM_EMAIL,
+    ).start()
