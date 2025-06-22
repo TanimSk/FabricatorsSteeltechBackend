@@ -15,3 +15,9 @@ class MarketingRepresentativeSerializer(serializers.ModelSerializer):
             "created_at",
             "marketing_rep",
         )
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.instance:  # Update case
+            fields["email"].read_only = True
+        return fields
