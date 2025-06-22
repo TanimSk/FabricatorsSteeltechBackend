@@ -3,6 +3,7 @@ from administrator.views import (
     FabricatorView,
     MarketingRepresentativeView,
     DistributorView,
+    ReportView,
 )
 
 
@@ -14,4 +15,5 @@ urlpatterns = [
         name="marketing-representative-view",
     ),
     path("distributor/", DistributorView.as_view(), name="distributor-view"),
+    path("report/", ReportView.as_view(), name="report-view"),
 ]
