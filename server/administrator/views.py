@@ -187,11 +187,14 @@ class MarketingRepresentativeView(APIView):
                 password=random_password,
             )
 
-            return Response({
-                "success": True,
-                "message": "Marketing Representative created successfully. Login credentials have been sent to the email.",
-                **serializer.data,
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "success": True,
+                    "message": "Marketing Representative created successfully. Login credentials have been sent to the email.",
+                    **serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
     def put(self, request, *args, **kwargs):
         rep_id = request.query_params.get("id")
@@ -225,7 +228,13 @@ class MarketingRepresentativeView(APIView):
             )
         try:
             rep = MarketingRepresentative.objects.get(id=rep_id)
+
+            # Also delete the associated user
+            if rep.marketing_rep:
+                user = rep.marketing_rep
             rep.delete()
+            user.delete()
+
             return JsonResponse(
                 {
                     "success": True,
