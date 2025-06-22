@@ -206,8 +206,7 @@ class FabricatorView(APIView):
             return JsonResponse(
                 {
                     "success": True,
-                    "message": "Marketing Representative assigned to Fabricator successfully.",
-                    **serializer.data,
+                    "message": "Marketing Representative assigned to Fabricator successfully. An email notification has been sent to the Marketing Representative.",
                 },
                 status=status.HTTP_200_OK,
             )
