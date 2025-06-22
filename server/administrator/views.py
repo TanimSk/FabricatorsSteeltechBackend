@@ -371,6 +371,18 @@ class ReportView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("id"):
+            report_id = request.query_params.get("id")
+            try:
+                report = Reports.objects.get(id=report_id)
+                serializer = ReportsSerializer(report)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Reports.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Report not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
         from_date = request.query_params.get("from_date")
         to_date = request.query_params.get("to_date")
 
