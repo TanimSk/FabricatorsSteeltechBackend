@@ -92,8 +92,8 @@ class FabricatorView(APIView):
     
     def patch(self, request, *args, **kwargs):
         fabricator_id = request.data.get("id")
-        status = request.data.get("status")
-        if not fabricator_id or not status:
+        fstatus = request.data.get("status")
+        if not fabricator_id or not fstatus:
             return JsonResponse(
                 {"success": False, "message": "ID and status parameters are required."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -110,10 +110,10 @@ class FabricatorView(APIView):
                 {"success": False, "message": "Invalid status."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        fabricator.status = status
+        fabricator.status = fstatus
         fabricator.save()
         serializer = FabricatorSerializer(fabricator)
-        return Response({
+        return JsonResponse({
             "success": True,
             "message": "Fabricator status updated successfully.",
             **serializer.data,
