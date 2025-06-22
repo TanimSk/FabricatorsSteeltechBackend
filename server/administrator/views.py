@@ -21,12 +21,15 @@ from rest_framework.permissions import AllowAny
 
 # models
 from fabricator.models import Fabricator
-from marketing_rep.models import MarketingRepresentative
+from marketing_rep.models import MarketingRepresentative, Reports
 from distributor.models import Distributor
 
 # serializers
 from fabricator.serializers import FabricatorSerializer
-from marketing_rep.serializers import MarketingRepresentativeSerializer
+from marketing_rep.serializers import (
+    MarketingRepresentativeSerializer,
+    ReportsSerializer,
+)
 from distributor.serializers import DistributorSerializer
 from utils.email_handler import send_login_credentials
 
@@ -355,12 +358,67 @@ class UploadFile(APIView):
 
         response = requests.post(url, params=params, files={"file": file})
 
-        print(response.text)
-
         return Response(
             {
                 "success": True,
                 **response.json(),
             },
             status=status.HTTP_201_CREATED,
+        )
+
+
+class ReportView(APIView):
+    permission_classes = [AuthenticateOnlyAdmin]
+
+    def get(self, request, *args, **kwargs):
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+
+        # Validate date format
+        if from_date and to_date:
+            try:
+                from_date = timezone.datetime.fromisoformat(from_date)
+                to_date = timezone.datetime.fromisoformat(to_date)
+                report = report.filter(sales_date__range=(from_date, to_date))
+            except ValueError:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid date format. Use ISO format (YYYY-MM-DD).",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if request.query_params.get("view") == "fabricators":
+            report = Reports.objects.all().order_by("-sales_date")
+
+            if from_date and to_date:
+                report = report.filter(sales_date__range=(from_date, to_date))
+
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(report, request)
+            serializer = ReportsSerializer(
+                result_page, many=True, hide_fields=["marketing_rep_name"]
+            )
+            return paginator.get_paginated_response(serializer.data)
+
+        elif request.query_params.get("view") == "marketing_representatives":
+            report = Reports.objects.all().order_by("-sales_date")
+
+            if from_date and to_date:
+                report = report.filter(sales_date__range=(from_date, to_date))
+
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(report, request)
+            serializer = ReportsSerializer(
+                result_page,
+                many=True,
+                hide_fields=[
+                    "fabricator_name",
+                ],
+            )
+            return paginator.get_paginated_response(serializer.data)
+        return JsonResponse(
+            {"success": False, "message": "Invalid view parameter."},
+            status=status.HTTP_400_BAD_REQUEST,
         )

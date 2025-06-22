@@ -23,3 +23,33 @@ class MarketingRepresentative(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Reports(models.Model):
+    """
+    Model representing a report submitted by a Marketing Representative.
+    """
+
+    marketing_rep = models.ForeignKey(
+        MarketingRepresentative,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    fabricator = models.ForeignKey(
+        'fabricator.Fabricator',
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    distributor = models.ForeignKey(
+        'distributor.Distributor',
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    invoice_number = models.CharField(max_length=255, unique=True)
+    sales_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
