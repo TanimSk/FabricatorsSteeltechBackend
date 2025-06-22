@@ -163,7 +163,7 @@ class MarketingRepresentativeView(APIView):
                 password=random_password,
                 email=serializer.validated_data["email"],
                 first_name=serializer.validated_data["name"],
-                is_student=True,
+                is_marketing_representative=True,
             )
 
             serializer.save(marketing_rep=user_instance)
