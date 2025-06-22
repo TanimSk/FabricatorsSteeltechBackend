@@ -12,6 +12,8 @@ from django.http import HttpResponse
 from django.utils import timezone
 import requests
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.utils.crypto import get_random_string
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -89,7 +91,7 @@ class FabricatorView(APIView):
         result_page = paginator.paginate_queryset(fabricators, request)
         serializer = FabricatorSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
+
     def patch(self, request, *args, **kwargs):
         fabricator_id = request.data.get("id")
         fstatus = request.data.get("status")
@@ -113,11 +115,14 @@ class FabricatorView(APIView):
         fabricator.status = fstatus
         fabricator.save()
         serializer = FabricatorSerializer(fabricator)
-        return JsonResponse({
-            "success": True,
-            "message": "Fabricator status updated successfully.",
-            **serializer.data,
-        }, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Fabricator status updated successfully.",
+                **serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class MarketingRepresentativeView(APIView):
@@ -139,9 +144,7 @@ class MarketingRepresentativeView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        reps = MarketingRepresentative.objects.all().order_by(
-            "-created_at"
-        )
+        reps = MarketingRepresentative.objects.all().order_by("-created_at")
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(reps, request)
         serializer = MarketingRepresentativeSerializer(result_page, many=True)
@@ -150,7 +153,19 @@ class MarketingRepresentativeView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = MarketingRepresentativeSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+
+            # create a new user for the marketing representative with password
+            User = get_user_model()
+            random_password = get_random_string(length=6)
+            user_instance = User.objects.create_user(
+                username=serializer.validated_data["email"],
+                password=random_password,
+                email=serializer.validated_data["email"],
+                first_name=serializer.validated_data["name"],
+                is_student=True,
+            )
+
+            serializer.save(marketing_rep=user_instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
