@@ -56,6 +56,33 @@ class Reports(models.Model):
         return self.title
 
 
+class Task(models.Model):
+    """
+    Model representing a task assigned to a Marketing Representative.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    marketing_rep = models.ForeignKey(
+        MarketingRepresentative,
+        on_delete=models.CASCADE,
+        related_name="tasks",
+    )    
+    description = models.CharField(max_length=512)    
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    def __str__(self):
+        return self.title
+
+
+
 class RecentActivity(models.Model):
     """
     Model representing recent activity of a Marketing Representative.
