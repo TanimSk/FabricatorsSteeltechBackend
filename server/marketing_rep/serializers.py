@@ -69,7 +69,10 @@ class ReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
         fields = "__all__"
-        read_only_fields = ("distributor",)
+        read_only_fields = (
+            "distributor",
+            "marketing_rep",
+        )
 
     def __init__(self, *args, **kwargs):
         # Accept an optional context variable to exclude `promo_code`
