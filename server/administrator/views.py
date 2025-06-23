@@ -58,6 +58,40 @@ class AuthenticateOnlyAdmin(BasePermission):
         return True
 
 
+class DashboardView(APIView):
+    permission_classes = [AuthenticateOnlyAdmin]
+
+    def get(self, request, *args, **kwargs):
+        applications_count = Fabricator.objects.count()
+        approved_count = Fabricator.objects.filter(status="approved").count()
+        pending_count = Fabricator.objects.filter(status="pending").count()
+        rejected_count = Fabricator.objects.filter(status="rejected").count()
+        assigned_count = Fabricator.objects.filter(
+            marketing_representative__isnull=False
+        ).count()
+        marketing_representatives_count = MarketingRepresentative.objects.count()
+        distributors_count = Distributor.objects.count()
+        sales_vs_date_graph = (
+            Reports.objects.values("sales_date")
+            .annotate(total_sales=Sum("amount"))
+            .order_by("sales_date")
+        )
+
+        return Response(
+            {
+                "applications_count": applications_count,
+                "approved_count": approved_count,
+                "pending_count": pending_count,
+                "rejected_count": rejected_count,
+                "assigned_count": assigned_count,
+                "marketing_representatives_count": marketing_representatives_count,
+                "distributors_count": distributors_count,
+                "sales_vs_date_graph": list(sales_vs_date_graph),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class FabricatorView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
