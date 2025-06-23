@@ -29,6 +29,7 @@ class Reports(models.Model):
     """
     Model representing a report submitted by a Marketing Representative.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     marketing_rep = models.ForeignKey(
         MarketingRepresentative,
@@ -36,12 +37,12 @@ class Reports(models.Model):
         related_name="reports",
     )
     fabricator = models.ForeignKey(
-        'fabricator.Fabricator',
+        "fabricator.Fabricator",
         on_delete=models.CASCADE,
         related_name="reports",
     )
     distributor = models.ForeignKey(
-        'distributor.Distributor',
+        "distributor.Distributor",
         on_delete=models.CASCADE,
         related_name="reports",
     )
@@ -53,3 +54,20 @@ class Reports(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class RecentActivity(models.Model):
+    """
+    Model representing recent activity of a Marketing Representative.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    marketing_rep = models.ForeignKey(
+        MarketingRepresentative,
+        on_delete=models.CASCADE,
+        related_name="recent_activities",
+    )
+    description = models.CharField(max_length=512)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.activity_type} by {self.marketing_rep.name}"

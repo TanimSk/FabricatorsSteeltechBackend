@@ -22,11 +22,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 # models
-from marketing_rep.models import Reports
+from marketing_rep.models import Reports, RecentActivity
 from fabricator.models import Fabricator
 
 # serializers
-from marketing_rep.serializers import ReportsSerializer
+from marketing_rep.serializers import ReportsSerializer, RecentActivitySerializer
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -46,6 +46,50 @@ class AuthenticateOnlyMar(BasePermission):
             raise PermissionDenied("User is not an Marketing Representative.")
 
         return True
+
+
+class DashboardView(APIView):
+    permission_classes = [AuthenticateOnlyMar]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Get the dashboard data for the marketing representative.
+        """
+        marketing_rep = request.user.marketingrepresentative
+
+        assigned_fabricators = Fabricator.objects.filter(
+            marketing_representative=marketing_rep
+        ).count()
+
+        recent_activities = RecentActivity.objects.filter(
+            marketing_rep=marketing_rep
+        ).order_by("-created_at")[:5]
+
+        recent_activities_data = RecentActivitySerializer(
+            recent_activities, many=True
+        ).data
+
+        monthly_sales = (
+            Reports.objects.filter(
+                marketing_rep=marketing_rep,
+                created_at__month=timezone.now().month,
+                created_at__year=timezone.now().year,
+            )
+            .aggregate(total_sales=Sum("sales_amount"))
+            .get("total_sales", 0)
+        )
+
+        total_reports = Reports.objects.filter(marketing_rep=marketing_rep).count()
+
+        return Response(
+            {
+                "assigned_fabricators": assigned_fabricators,
+                "monthly_sales": monthly_sales,
+                "total_reports": total_reports,
+                "recent_activities": recent_activities_data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class ReportsView(APIView):
@@ -73,6 +117,11 @@ class ReportsView(APIView):
         serializer = ReportsSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(marketing_rep=request.user.marketingrepresentative)
+            # record recent activity
+            RecentActivity.objects.create(
+                marketing_rep=request.user.marketingrepresentative,
+                description=f"Report submitted for fabricator {serializer.validated_data['fabricator'].name}",
+            )
             return Response(
                 {
                     "success": True,
