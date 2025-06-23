@@ -4,6 +4,7 @@ import json
 
 # models
 from marketing_rep.models import MarketingRepresentative, Reports
+from fabricator.models import Fabricator
 
 
 class MarketingRepresentativeSerializer(serializers.ModelSerializer):
@@ -68,6 +69,7 @@ class ReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
         fields = "__all__"
+        read_only_fields = ("distributor",)
 
     def __init__(self, *args, **kwargs):
         # Accept an optional context variable to exclude `promo_code`
@@ -78,3 +80,9 @@ class ReportsSerializer(serializers.ModelSerializer):
             for key in hidden_keys:
                 if key in self.fields:
                     self.fields.pop(key, None)
+
+    def create(self, validated_data):
+        # Create a new report instance
+        distributor = validated_data.get("fabricator").distributor
+        report = Reports.objects.create(**validated_data, distributor=distributor)
+        return report
