@@ -73,4 +73,11 @@ class ReportsView(APIView):
         serializer = ReportsSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save(marketing_rep=request.user.marketingrepresentative)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "success": True,
+                    "message": "Report created successfully.",
+                    **serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
