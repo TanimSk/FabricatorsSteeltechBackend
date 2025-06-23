@@ -75,7 +75,7 @@ class DashboardView(APIView):
                 created_at__month=timezone.now().month,
                 created_at__year=timezone.now().year,
             )
-            .aggregate(total_sales=Sum("sales_amount"))
+            .aggregate(total_sales=Sum("amount"))
             .get("total_sales", 0)
         )
 
