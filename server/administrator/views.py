@@ -735,7 +735,7 @@ class SubDistrictView(APIView):
             for upazila in upazilas:
                 if upazila["district_id"] == district_id:
                     return JsonResponse(
-                        {"success": True, "upazilas": upazila.get("upazilas", [])},
+                        {"success": True, "upazilas": upazila},
                         status=status.HTTP_200_OK,
                     )
             return JsonResponse(
