@@ -82,6 +82,7 @@ class Task(models.Model):
         choices=STATUS_CHOICES,
         default="pending",
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
