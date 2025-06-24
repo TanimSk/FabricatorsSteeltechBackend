@@ -3,7 +3,7 @@ from rest_framework import serializers
 import json
 
 # models
-from marketing_rep.models import MarketingRepresentative, Reports, RecentActivity
+from marketing_rep.models import MarketingRepresentative, Reports, RecentActivity, Task
 from fabricator.models import Fabricator
 
 
@@ -94,4 +94,9 @@ class ReportsSerializer(serializers.ModelSerializer):
 class RecentActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecentActivity
+        fields = "__all__"
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
         fields = "__all__"

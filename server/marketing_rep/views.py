@@ -22,11 +22,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 # models
-from marketing_rep.models import Reports, RecentActivity
+from marketing_rep.models import Reports, RecentActivity, Task
 from fabricator.models import Fabricator
 
 # serializers
-from marketing_rep.serializers import ReportsSerializer, RecentActivitySerializer
+from marketing_rep.serializers import (
+    ReportsSerializer,
+    RecentActivitySerializer,
+    TaskSerializer,
+)
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -130,3 +134,56 @@ class ReportsView(APIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+
+class TaskView(APIView):
+    permission_classes = [AuthenticateOnlyMar]
+
+    def get(self, request, *args, **kwargs):
+        tasks = Task.objects.filter(
+            marketing_rep=request.user.marketingrepresentative
+        ).order_by("-created_at")
+        paginator = StandardResultsSetPagination()
+        paginated_tasks = paginator.paginate_queryset(tasks, request)
+        serializer = TaskSerializer(paginated_tasks, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        """
+        Update a task.
+        """
+        if request.data.get("id"):
+            task = Task.objects.filter(
+                id=request.query_params.get("id"),
+                marketing_rep=request.user.marketingrepresentative,
+            ).first()
+            if not task:
+                return Response(
+                    {"error": "Task not found."}, status=status.HTTP_404_NOT_FOUND
+                )
+            if not request.data.get("status") in [
+                "pending",
+                "in_progress",
+                "completed",
+            ]:
+                return Response(
+                    {"error": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST
+                )
+            task.status = request.data.get("status")
+            task.save()
+            # record recent activity
+            RecentActivity.objects.create(
+                marketing_rep=request.user.marketingrepresentative,
+                description=f"Task {task.description} updated to {task.status}.",
+            )
+            return Response(
+                {
+                    "success": True,
+                    "message": "Task updated successfully.",
+                    "task": TaskSerializer(task).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"error": "Task ID is required."}, status=status.HTTP_400_BAD_REQUEST
+        )

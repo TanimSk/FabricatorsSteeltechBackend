@@ -31,6 +31,7 @@ from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import (
     MarketingRepresentativeSerializer,
     ReportsSerializer,
+    TaskSerializer,
 )
 from distributor.serializers import DistributorSerializer
 from utils.email_handler import (
@@ -271,7 +272,7 @@ class MarketingRepresentativeView(APIView):
             tasks = Task.objects.filter(marketing_rep=rep).order_by("-created_at")
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(tasks, request)
-            serializer = MarketingRepresentativeSerializer(result_page, many=True)
+            serializer = TaskSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
 
         if request.query_params.get("id"):
