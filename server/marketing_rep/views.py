@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
 import csv
-
+from decimal import Decimal
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -80,7 +80,7 @@ class DashboardView(APIView):
                 created_at__year=timezone.now().year,
             )
             .aggregate(total_sales=Sum("amount"))
-            .get("total_sales", 0)
+            .get("total_sales") or Decimal("0.00")
         )
 
         last_month_sales = (
@@ -90,12 +90,16 @@ class DashboardView(APIView):
                 created_at__year=timezone.now().year,
             )
             .aggregate(total_sales=Sum("amount"))
-            .get("total_sales", 0)
+            .get("total_sales") or Decimal("0.00")
         )
 
-        revenue_change_percentage = str(
-            round((monthly_sales - last_month_sales) / last_month_sales * 100, 2)
-        )
+        if last_month_sales == 0:
+            revenue_change_percentage = "N/A"
+        else:
+
+            revenue_change_percentage = str(
+                round((monthly_sales - last_month_sales) / last_month_sales * 100, 2)
+            )
 
         total_reports = Reports.objects.filter(marketing_rep=marketing_rep).count()
 
