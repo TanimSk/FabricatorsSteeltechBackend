@@ -180,7 +180,7 @@ class TaskView(APIView):
                 {
                     "success": True,
                     "message": "Task updated successfully.",
-                    "task": TaskSerializer(task).data,
+                    **TaskSerializer(task).data,
                 },
                 status=status.HTTP_200_OK,
             )
