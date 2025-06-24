@@ -154,12 +154,12 @@ class TaskView(APIView):
         """
         if request.data.get("id"):
             task = Task.objects.filter(
-                id=request.query_params.get("id"),
+                id=request.data.get("id"),
                 marketing_rep=request.user.marketingrepresentative,
             ).first()
             if not task:
                 return Response(
-                    {"error": "Task not found."}, status=status.HTTP_404_NOT_FOUND
+                    {"success": False, "message": "Task not found."}, status=status.HTTP_404_NOT_FOUND
                 )
             if not request.data.get("status") in [
                 "pending",
@@ -167,7 +167,7 @@ class TaskView(APIView):
                 "completed",
             ]:
                 return Response(
-                    {"error": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST
+                    {"success": False, "message": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST
                 )
             task.status = request.data.get("status")
             task.save()
@@ -185,5 +185,6 @@ class TaskView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {"error": "Task ID is required."}, status=status.HTTP_400_BAD_REQUEST
+            {"success": False, "message": "Task ID is required."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
