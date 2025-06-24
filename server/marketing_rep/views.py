@@ -83,13 +83,38 @@ class DashboardView(APIView):
             .get("total_sales", 0)
         )
 
+        last_month_sales = (
+            Reports.objects.filter(
+                marketing_rep=marketing_rep,
+                created_at__month=timezone.now().month - 1,
+                created_at__year=timezone.now().year,
+            )
+            .aggregate(total_sales=Sum("amount"))
+            .get("total_sales", 0)
+        )
+
+        revenue_change_percentage = str(
+            round((monthly_sales - last_month_sales) / last_month_sales * 100, 2)
+        )
+
         total_reports = Reports.objects.filter(marketing_rep=marketing_rep).count()
+
+        pending_tasks = Task.objects.filter(
+            marketing_rep=marketing_rep, status="pending"
+        ).count()
+        completed_tasks = Task.objects.filter(
+            marketing_rep=marketing_rep, status="completed"
+        ).count()
 
         return Response(
             {
+                "success": True,
                 "assigned_fabricators": assigned_fabricators,
                 "monthly_sales": monthly_sales,
                 "total_reports": total_reports,
+                "revenue_change_percentage": revenue_change_percentage,
+                "pending_tasks": pending_tasks,
+                "completed_tasks": completed_tasks,
                 "recent_activities": recent_activities_data,
             },
             status=status.HTTP_200_OK,
@@ -159,7 +184,8 @@ class TaskView(APIView):
             ).first()
             if not task:
                 return Response(
-                    {"success": False, "message": "Task not found."}, status=status.HTTP_404_NOT_FOUND
+                    {"success": False, "message": "Task not found."},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             if not request.data.get("status") in [
                 "pending",
@@ -167,7 +193,8 @@ class TaskView(APIView):
                 "completed",
             ]:
                 return Response(
-                    {"success": False, "message": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST
+                    {"success": False, "message": "Invalid status."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             task.status = request.data.get("status")
             task.save()
