@@ -51,6 +51,10 @@ class Reports(models.Model):
     invoice_number = models.CharField(max_length=255, unique=True)
     sales_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    attachements_urls = models.JSONField(
+        default=list,
+        blank=True,
+    )
 
     def __str__(self):
         return self.title
@@ -60,13 +64,14 @@ class Task(models.Model):
     """
     Model representing a task assigned to a Marketing Representative.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     marketing_rep = models.ForeignKey(
         MarketingRepresentative,
         on_delete=models.CASCADE,
         related_name="tasks",
-    )    
-    description = models.CharField(max_length=512)    
+    )
+    description = models.CharField(max_length=512)
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("in_progress", "In Progress"),
@@ -82,11 +87,11 @@ class Task(models.Model):
         return self.title
 
 
-
 class RecentActivity(models.Model):
     """
     Model representing recent activity of a Marketing Representative.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     marketing_rep = models.ForeignKey(
         MarketingRepresentative,

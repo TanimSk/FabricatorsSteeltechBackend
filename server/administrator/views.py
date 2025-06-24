@@ -23,7 +23,7 @@ from rest_framework.permissions import AllowAny
 
 # models
 from fabricator.models import Fabricator
-from marketing_rep.models import MarketingRepresentative, Reports
+from marketing_rep.models import MarketingRepresentative, Reports, Task
 from distributor.models import Distributor
 
 # serializers
@@ -250,6 +250,30 @@ class MarketingRepresentativeView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("view") == "tasks":
+            if not request.query_params.get("id"):
+                return JsonResponse(
+                    {"success": False, "message": "ID parameter is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                rep = MarketingRepresentative.objects.get(
+                    id=request.query_params.get("id")
+                )
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            tasks = Task.objects.filter(marketing_rep=rep).order_by("-created_at")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(tasks, request)
+            serializer = MarketingRepresentativeSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("id"):
             rep_id = request.query_params.get("id")
             try:
@@ -272,6 +296,40 @@ class MarketingRepresentativeView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        if request.query_params.get("action") == "assign":
+            if not request.data.get("id"):
+                return JsonResponse(
+                    {"success": False, "message": "ID parameter is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                rep = MarketingRepresentative.objects.get(id=request.data["id"])
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            if not request.data.get("description"):
+                return JsonResponse(
+                    {"success": False, "message": "Description is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            Task.objects.create(
+                marketing_rep=rep,
+                description=request.data["description"],
+                status="pending",
+            )
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Task assigned to Marketing Representative successfully.",
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
         serializer = MarketingRepresentativeSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
 

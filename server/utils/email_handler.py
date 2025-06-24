@@ -105,3 +105,24 @@ def send_marketing_rep_assigned_notification(
         [marketing_rep_email],
         DEFAULT_FROM_EMAIL,
     ).start()
+
+def send_marketing_rep_report_task(
+    marketing_rep_name: str,
+    marketing_rep_email: str,
+    description: str,
+):
+    html_content = render_to_string(
+        "tasks_provided.html",
+        {
+            "marketing_rep_name": marketing_rep_name,
+            "description": description,
+        },
+    )
+    subject = "New Task Assigned - Steeltech"
+
+    EmailThread(
+        subject,
+        html_content,
+        [marketing_rep_email],
+        DEFAULT_FROM_EMAIL,
+    ).start()
