@@ -38,6 +38,7 @@ from utils.email_handler import (
     send_login_credentials,
     send_marketing_rep_assigned_notification,
 )
+from server.utils import dist_upazila_map
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -115,11 +116,9 @@ class FabricatorView(APIView):
             )
 
         elif request.query_params.get("view") == "approved":
-            fabricators = (
-                Fabricator.objects.filter(status="approved")
-                .order_by("-created_at")
-                .exclude(marketing_representative__isnull=True)
-            )
+            fabricators = Fabricator.objects.filter(
+                status="approved", marketing_representative__isnull=True
+            ).order_by("-created_at")
         elif request.query_params.get("view") == "rejected":
             fabricators = Fabricator.objects.filter(status="rejected").order_by(
                 "-created_at"
@@ -279,8 +278,14 @@ class MarketingRepresentativeView(APIView):
             rep_id = request.query_params.get("id")
             try:
                 rep = MarketingRepresentative.objects.get(id=rep_id)
+                fab_count = Fabricator.objects.filter(
+                    marketing_representative=rep
+                ).count()
                 serializer = MarketingRepresentativeSerializer(rep)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(
+                    {"assigned_fabricators_count": fab_count, **serializer.data},
+                    status=status.HTTP_200_OK,
+                )
             except MarketingRepresentative.DoesNotExist:
                 return JsonResponse(
                     {
@@ -566,7 +571,7 @@ class ReportView(APIView):
         if from_date and to_date:
             try:
                 from_date = timezone.datetime.fromisoformat(from_date)
-                to_date = timezone.datetime.fromisoformat(to_date)                
+                to_date = timezone.datetime.fromisoformat(to_date)
             except ValueError:
                 return JsonResponse(
                     {
@@ -708,3 +713,36 @@ class ReportView(APIView):
                     )
 
                 return response
+
+
+class SubDistrictView(APIView):
+    def get(self, request, *args, **kwargs):
+        if request.query_params.get("view") == "districts":
+            districts = dist_upazila_map.districts
+            return JsonResponse(
+                {"success": True, "districts": districts.get("districts", [])},
+                status=status.HTTP_200_OK,
+            )
+        if request.query_params.get("view") == "upazillas":
+            district_id = request.query_params.get("district-id")
+            if not district_id:
+                return JsonResponse(
+                    {"success": False, "message": "District ID parameter is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            upazilas = dist_upazila_map.upazilas.get("upazilas", [])
+
+            for upazila in upazilas:
+                if upazila["district_id"] == district_id:
+                    return JsonResponse(
+                        {"success": True, "upazilas": upazila.get("upazilas", [])},
+                        status=status.HTTP_200_OK,
+                    )
+            return JsonResponse(
+                {"success": False, "message": "District not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return JsonResponse(
+            {"success": False, "message": "Invalid view parameter."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

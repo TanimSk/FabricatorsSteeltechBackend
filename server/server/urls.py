@@ -27,7 +27,7 @@ from dj_rest_auth.views import (
 )
 from django.views.generic import TemplateView
 from administrator.auth_views import LoginWthPermission, CustomPasswordChangeView
-from administrator.views import UploadFile
+from administrator.views import UploadFile, SubDistrictView
 
 
 urlpatterns = [
@@ -70,4 +70,6 @@ urlpatterns = [
     path("distributor/", include("distributor.urls")),
     # ---------- File Upload ------------
     path("upload-file/", UploadFile.as_view(), name="upload_file"),
+    # ---------- District and Sub-District Data ------------
+    path("districts/", SubDistrictView.as_view(), name="sub_district_view"),
 ]
