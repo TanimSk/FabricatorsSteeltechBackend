@@ -723,7 +723,7 @@ class SubDistrictView(APIView):
                 {"success": True, "districts": districts.get("districts", [])},
                 status=status.HTTP_200_OK,
             )
-        if request.query_params.get("view") == "upazillas":
+        if request.query_params.get("view") == "upazilas":
             district_id = request.query_params.get("district-id")
             if not district_id:
                 return JsonResponse(
