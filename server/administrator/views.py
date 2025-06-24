@@ -740,7 +740,7 @@ class SubDistrictView(APIView):
             if wanted_upazilas:
                 return JsonResponse(
                     {"success": True, "upazilas": wanted_upazilas},
-                    status=status.HTTP_404_NOT_FOUND,
+                    status=status.HTTP_200_OK,
                 )
             return JsonResponse(
                 {"success": False, "message": "District not found."},
