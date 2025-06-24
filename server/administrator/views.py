@@ -731,13 +731,17 @@ class SubDistrictView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             upazilas = dist_upazila_map.upazilas.get("upazilas", [])
+            wanted_upazilas = []
 
             for upazila in upazilas:
                 if upazila["district_id"] == district_id:
-                    return JsonResponse(
-                        {"success": True, "upazilas": upazila},
-                        status=status.HTTP_200_OK,
-                    )
+                    wanted_upazilas.append(upazila)
+
+            if wanted_upazilas:
+                return JsonResponse(
+                    {"success": True, "upazilas": wanted_upazilas},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             return JsonResponse(
                 {"success": False, "message": "District not found."},
                 status=status.HTTP_404_NOT_FOUND,
