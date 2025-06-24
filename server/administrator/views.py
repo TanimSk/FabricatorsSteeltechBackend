@@ -566,8 +566,7 @@ class ReportView(APIView):
         if from_date and to_date:
             try:
                 from_date = timezone.datetime.fromisoformat(from_date)
-                to_date = timezone.datetime.fromisoformat(to_date)
-                report = report.filter(sales_date__range=(from_date, to_date))
+                to_date = timezone.datetime.fromisoformat(to_date)                
             except ValueError:
                 return JsonResponse(
                     {
