@@ -38,7 +38,7 @@ from utils.email_handler import (
     send_login_credentials,
     send_marketing_rep_assigned_notification,
 )
-from server.utils import dist_upazila_map
+from utils import dist_upazila_map
 
 
 class StandardResultsSetPagination(PageNumberPagination):
