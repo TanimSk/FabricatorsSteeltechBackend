@@ -621,6 +621,19 @@ class ReportView(APIView):
                 ],
             )
             return paginator.get_paginated_response(serializer.data)
+
+        elif request.query_params.get("view") == "summary":
+            # Generate summary report, Sum of amount of each fabricator
+            fabricator_summary = (
+                Reports.objects.values("fabricator__name")
+                .annotate(total_amount=Sum("amount"))
+                .order_by("-total_amount")
+            )
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(fabricator_summary, request)
+            serializer = ReportsSerializer(result_page, many=True, hide_fields=["id"])
+            return paginator.get_paginated_response(serializer.data)
+
         return JsonResponse(
             {"success": False, "message": "Invalid view parameter."},
             status=status.HTTP_400_BAD_REQUEST,
