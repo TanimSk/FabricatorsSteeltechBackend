@@ -623,33 +623,76 @@ class ReportView(APIView):
             return paginator.get_paginated_response(serializer.data)
 
         elif request.query_params.get("view") == "summary":
-            # Generate summary report, Sum of amount of each fabricator
-            # Subquery to get a distributor name for each fabricator (first matched one)
-            distributor_subquery = Reports.objects.filter(
-                fabricator=OuterRef('fabricator')
-            ).order_by('id').values('distributor__name')[:1]
-
-            # Subquery to get a marketing_rep name for each fabricator
-            marketing_rep_subquery = Reports.objects.filter(
-                fabricator=OuterRef('fabricator')
-            ).order_by('id').values('marketing_rep__name')[:1]
-
-            # Final query grouped by fabricator
-            fabricator_summary = (
-                Reports.objects
-                .values('fabricator', 'fabricator__name')
-                .annotate(
-                    total_amount=Sum('amount'),
-                    distributor_name=Subquery(distributor_subquery),
-                    marketing_rep_name=Subquery(marketing_rep_subquery),
-                )
-                .order_by('-total_amount')
+            # Individual subqueries for each distributor field
+            distributor_name = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__name")[:1]
             )
-            print(fabricator_summary)
+            distributor_phone = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__phone_number")[:1]
+            )
+            distributor_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__district")[:1]
+            )
+            distributor_sub_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__sub_district")[:1]
+            )
+
+            # Individual subqueries for each marketing_rep field
+            rep_name = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__name")[:1]
+            )
+            rep_phone = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__phone_number")[:1]
+            )
+            rep_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__district")[:1]
+            )
+            rep_sub_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__sub_district")[:1]
+            )
+
+            # Final grouped query
+            fabricator_summary = (
+                Reports.objects.values(
+                    "fabricator",
+                    "fabricator__name",
+                    "fabricator__registration_number",
+                    "fabricator__phone_number",
+                    "fabricator__district",
+                    "fabricator__sub_district",
+                )
+                .annotate(
+                    total_amount=Sum("amount"),
+                    distributor_name=distributor_name,
+                    distributor_phone=distributor_phone,
+                    distributor_district=distributor_district,
+                    distributor_sub_district=distributor_sub_district,
+                    marketing_rep_name=rep_name,
+                    marketing_rep_phone=rep_phone,
+                    marketing_rep_district=rep_district,
+                    marketing_rep_sub_district=rep_sub_district,
+                )
+                .order_by("-total_amount")
+            )
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(fabricator_summary, request)
-            serializer = ReportsSerializer(result_page, many=True, hide_fields=["id"])
-            return paginator.get_paginated_response(serializer.data)
+            return paginator.get_paginated_response(result_page)
 
         return JsonResponse(
             {"success": False, "message": "Invalid view parameter."},
