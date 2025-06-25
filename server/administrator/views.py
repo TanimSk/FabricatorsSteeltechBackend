@@ -27,7 +27,7 @@ from marketing_rep.models import MarketingRepresentative, Reports, Task
 from distributor.models import Distributor
 
 # serializers
-from fabricator.serializers import FabricatorSerializer
+from fabricator.serializers import FabricatorSerializer, ExpandedFabricatorSerializer
 from marketing_rep.serializers import (
     MarketingRepresentativeSerializer,
     ReportsSerializer,
