@@ -629,6 +629,7 @@ class ReportView(APIView):
                 .annotate(total_amount=Sum("amount"))
                 .order_by("-total_amount")
             )
+            print(fabricator_summary)
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(fabricator_summary, request)
             serializer = ReportsSerializer(result_page, many=True, hide_fields=["id"])
