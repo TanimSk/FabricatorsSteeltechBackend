@@ -7,7 +7,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from dj_rest_auth.registration.views import RegisterView
-from django.db.models import Sum
+from django.db.models import Sum, OuterRef, Subquery
 from django.http import HttpResponse
 from django.utils import timezone
 import requests
@@ -624,10 +624,26 @@ class ReportView(APIView):
 
         elif request.query_params.get("view") == "summary":
             # Generate summary report, Sum of amount of each fabricator
+            # Subquery to get a distributor name for each fabricator (first matched one)
+            distributor_subquery = Reports.objects.filter(
+                fabricator=OuterRef('fabricator')
+            ).order_by('id').values('distributor__name')[:1]
+
+            # Subquery to get a marketing_rep name for each fabricator
+            marketing_rep_subquery = Reports.objects.filter(
+                fabricator=OuterRef('fabricator')
+            ).order_by('id').values('marketing_rep__name')[:1]
+
+            # Final query grouped by fabricator
             fabricator_summary = (
-                Reports.objects.values("fabricator__name")
-                .annotate(total_amount=Sum("amount"))
-                .order_by("-total_amount")
+                Reports.objects
+                .values('fabricator', 'fabricator__name')
+                .annotate(
+                    total_amount=Sum('amount'),
+                    distributor_name=Subquery(distributor_subquery),
+                    marketing_rep_name=Subquery(marketing_rep_subquery),
+                )
+                .order_by('-total_amount')
             )
             print(fabricator_summary)
             paginator = StandardResultsSetPagination()
