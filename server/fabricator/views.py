@@ -24,7 +24,7 @@ from distributor.models import Distributor
 from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import MarketingRepresentativeSerializer
 from distributor.serializers import DistributorSerializer
-from server.utils.email_handler import fab_registered_notification
+from utils.email_handler import fab_registered_notification
 
 
 class StandardResultsSetPagination(PageNumberPagination):
