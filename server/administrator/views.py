@@ -79,6 +79,11 @@ class DashboardView(APIView):
             .annotate(total_sales=Sum("amount"))
             .order_by("sales_date")
         )
+        sales_vs_fabricator_graph = (
+            Reports.objects.values("fabricator__name")
+            .annotate(total_sales=Sum("amount"))
+            .order_by("-total_sales")
+        )
 
         return Response(
             {
@@ -90,6 +95,7 @@ class DashboardView(APIView):
                 "marketing_representatives_count": marketing_representatives_count,
                 "distributors_count": distributors_count,
                 "sales_vs_date_graph": list(sales_vs_date_graph),
+                "sales_vs_fabricator_graph": list(sales_vs_fabricator_graph),
             },
             status=status.HTTP_200_OK,
         )
@@ -175,7 +181,11 @@ class FabricatorView(APIView):
                 fab_name=fabricator.name,
                 status=fstatus,
                 date=fabricator.created_at.strftime("%Y-%m-%d"),
-                fab_email=fabricator.marketing_representative.email if fabricator.marketing_representative else None,
+                fab_email=(
+                    fabricator.marketing_representative.email
+                    if fabricator.marketing_representative
+                    else None
+                ),
             )
             return JsonResponse(
                 {
