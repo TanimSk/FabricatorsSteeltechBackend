@@ -667,9 +667,14 @@ class ReportView(APIView):
                 .values("marketing_rep__sub_district")[:1]
             )
 
+            # date filter
+            report = Reports.objects.all()
+            if from_date and to_date:
+                report = report.filter(sales_date__range=(from_date, to_date))
+
             # Final grouped query
             fabricator_summary = (
-                Reports.objects.values(
+                report.values(
                     "fabricator",
                     "fabricator__name",
                     "fabricator__registration_number",
@@ -786,6 +791,121 @@ class ReportView(APIView):
                     )
 
                 return response
+
+            if request.query_params.get("view") == "summary":
+                # Individual subqueries for each distributor field
+                distributor_name = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("distributor__name")[:1]
+                )
+                distributor_phone = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("distributor__phone_number")[:1]
+                )
+                distributor_district = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("distributor__district")[:1]
+                )
+                distributor_sub_district = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("distributor__sub_district")[:1]
+                )
+
+                # Individual subqueries for each marketing_rep field
+                rep_name = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("marketing_rep__name")[:1]
+                )
+                rep_phone = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("marketing_rep__phone_number")[:1]
+                )
+                rep_district = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("marketing_rep__district")[:1]
+                )
+                rep_sub_district = Subquery(
+                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                    .order_by("id")
+                    .values("marketing_rep__sub_district")[:1]
+                )
+
+                # date filter
+                report = Reports.objects.all()
+                if from_date and to_date:
+                    report = report.filter(sales_date__range=(from_date, to_date))
+
+                # Final grouped query
+                fabricator_summary = (
+                    report.values(
+                        "fabricator",
+                        "fabricator__name",
+                        "fabricator__registration_number",
+                        "fabricator__phone_number",
+                        "fabricator__district",
+                        "fabricator__sub_district",
+                    )
+                    .annotate(
+                        total_amount=Sum("amount"),
+                        distributor_name=distributor_name,
+                        distributor_phone=distributor_phone,
+                        distributor_district=distributor_district,
+                        distributor_sub_district=distributor_sub_district,
+                        marketing_rep_name=rep_name,
+                        marketing_rep_phone=rep_phone,
+                        marketing_rep_district=rep_district,
+                        marketing_rep_sub_district=rep_sub_district,
+                    )
+                    .order_by("-total_amount")
+                )
+
+            writer.writerow(
+                [
+                    "Fabricator Name",
+                    "Registration Number",
+                    "Phone Number",
+                    "District",
+                    "Sub-District",
+                    "Total Amount",
+                    "Distributor Name",
+                    "Distributor Phone Number",
+                    "Distributor District",
+                    "Distributor Sub-District",
+                    "Marketing Representative Name",
+                    "Marketing Representative Phone Number",
+                    "Marketing Representative District",
+                    "Marketing Representative Sub-District",
+                ]
+            )
+
+            for summary in fabricator_summary:
+                writer.writerow(
+                    [
+                        summary["fabricator__name"],
+                        summary["fabricator__registration_number"],
+                        summary["fabricator__phone_number"],
+                        summary["fabricator__district"],
+                        summary["fabricator__sub_district"],
+                        summary["total_amount"],
+                        summary["distributor_name"],
+                        summary["distributor_phone"],
+                        summary["distributor_district"],
+                        summary["distributor_sub_district"],
+                        summary["marketing_rep_name"],
+                        summary["marketing_rep_phone"],
+                        summary["marketing_rep_district"],
+                        summary["marketing_rep_sub_district"],
+                    ]
+                )
+
+            return response
 
 
 class SubDistrictView(APIView):
