@@ -516,7 +516,7 @@ districts = {
 }
 
 
-upazilas = {
+upazilas_thanas = {
     "upazilas": [
         {"id": "1", "district_id": "34", "name": "Amtali", "bn_name": "আমতলী"},
         {"id": "2", "district_id": "34", "name": "Bamna", "bn_name": "বামনা"},

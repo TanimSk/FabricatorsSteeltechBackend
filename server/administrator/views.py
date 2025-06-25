@@ -916,17 +916,17 @@ class SubDistrictView(APIView):
                 {"success": True, "districts": districts.get("districts", [])},
                 status=status.HTTP_200_OK,
             )
-        if request.query_params.get("view") == "upazilas":
+        if request.query_params.get("view") == "thanas":
             district_id = request.query_params.get("district-id")
             if not district_id:
                 return JsonResponse(
                     {"success": False, "message": "District ID parameter is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            upazilas = dist_upazila_map.upazilas.get("upazilas", [])
+            upazilas_thanas = dist_upazila_map.upazilas_thanas.get("upazilas", [])
             wanted_upazilas = []
 
-            for upazila in upazilas:
+            for upazila in upazilas_thanas:
                 if upazila["district_id"] == district_id:
                     wanted_upazilas.append(upazila)
 
