@@ -17,6 +17,7 @@ class Fabricator(models.Model):
     district = models.CharField(max_length=255)
     sub_district = models.CharField(max_length=255)
     address = models.CharField(max_length=512, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
     distributor = models.ForeignKey(
         "distributor.Distributor",
         on_delete=models.DO_NOTHING,
@@ -53,5 +54,5 @@ class Fabricator(models.Model):
     # create a unique registration number
     def save(self, *args, **kwargs):
         if not self.registration_number:
-            self.registration_number = f"{str(date.today().year)[-1:]}{random.randint(0, 9)}{str(Fabricator.objects.count() + 1).zfill(4)}"
+            self.registration_number = f"HOS-{str(date.today().year)[-1:]}{random.randint(0, 9)}-{str(Fabricator.objects.count() + 1).zfill(4)}"
         super().save(*args, **kwargs)

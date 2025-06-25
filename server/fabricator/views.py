@@ -24,6 +24,7 @@ from distributor.models import Distributor
 from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import MarketingRepresentativeSerializer
 from distributor.serializers import DistributorSerializer
+from server.utils.email_handler import fab_registered_notification
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -40,6 +41,16 @@ class FabricatorView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            # send email notification to admin
+            fab_registered_notification(
+                fab_name=serializer.validated_data["name"],
+                fab_phone_number=serializer.validated_data["phone_number"],
+                fab_registration_number=serializer.validated_data[
+                    "registration_number"
+                ],
+                fab_district=serializer.validated_data["district"],
+                fab_sub_district=serializer.validated_data["sub_district"],
+            )
             return Response(
                 {
                     "success": True,
@@ -70,4 +81,3 @@ class FabricatorView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-

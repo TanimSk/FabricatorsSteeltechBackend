@@ -35,6 +35,7 @@ from marketing_rep.serializers import (
 )
 from distributor.serializers import DistributorSerializer
 from utils.email_handler import (
+    fab_status_change_notification,
     send_login_credentials,
     send_marketing_rep_assigned_notification,
 )
@@ -102,7 +103,7 @@ class FabricatorView(APIView):
             fabricator_id = request.query_params.get("id")
             try:
                 fabricator = Fabricator.objects.get(id=fabricator_id)
-                serializer = FabricatorSerializer(fabricator)
+                serializer = ExpandedFabricatorSerializer(fabricator)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Fabricator.DoesNotExist:
                 return JsonResponse(
@@ -138,7 +139,7 @@ class FabricatorView(APIView):
 
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(fabricators, request)
-        serializer = FabricatorSerializer(result_page, many=True)
+        serializer = ExpandedFabricatorSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
@@ -167,7 +168,15 @@ class FabricatorView(APIView):
                 )
             fabricator.status = fstatus
             fabricator.save()
-            serializer = FabricatorSerializer(fabricator)
+            serializer = ExpandedFabricatorSerializer(fabricator)
+
+            # send email notification to the fabricator if status is approved or rejected
+            fab_status_change_notification(
+                fab_name=fabricator.name,
+                status=fstatus,
+                date=fabricator.created_at.strftime("%Y-%m-%d"),
+                fab_email=fabricator.marketing_representative.email if fabricator.marketing_representative else None,
+            )
             return JsonResponse(
                 {
                     "success": True,
@@ -230,6 +239,7 @@ class FabricatorView(APIView):
 
             # send email notification to the marketing representative
             send_marketing_rep_assigned_notification(
+                user_name=marketing_rep.name,
                 fab_name=fabricator.name,
                 fab_phone_number=fabricator.phone_number,
                 fab_registration_number=fabricator.registration_number,

@@ -11,3 +11,11 @@ class FabricatorSerializer(serializers.ModelSerializer):
         model = Fabricator
         fields = "__all__"
         read_only_fields = ("status",)
+
+
+class ExpandedFabricatorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fabricator
+        fields = "__all__"
+        read_only_fields = ("status",)
+        depth = 1

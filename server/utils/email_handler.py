@@ -26,6 +26,9 @@ class EmailThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        if not self.recipient_list:
+            print("No recipient list provided. Email not sent.")
+            return
         msg = EmailMessage(self.subject, None, self.sender, self.recipient_list)
 
         # Attaching images
@@ -80,6 +83,7 @@ def send_login_credentials(
 
 
 def send_marketing_rep_assigned_notification(
+    user_name: str,
     fab_name: str,
     fab_phone_number: str,
     fab_registration_number: str,
@@ -90,6 +94,7 @@ def send_marketing_rep_assigned_notification(
     html_content = render_to_string(
         "fabricator_assigned.html",
         {
+            "user_name": user_name,
             "fab_name": fab_name,
             "fab_phone_number": fab_phone_number,
             "fab_registration_number": fab_registration_number,
@@ -105,6 +110,7 @@ def send_marketing_rep_assigned_notification(
         [marketing_rep_email],
         DEFAULT_FROM_EMAIL,
     ).start()
+
 
 def send_marketing_rep_report_task(
     marketing_rep_name: str,
@@ -124,5 +130,61 @@ def send_marketing_rep_report_task(
         subject,
         html_content,
         [marketing_rep_email],
+        DEFAULT_FROM_EMAIL,
+    ).start()
+
+
+def fab_registered_notification(
+    fab_name: str,
+    fab_phone_number: str,
+    fab_registration_number: str,
+    fab_district: str,
+    fab_sub_district: str,
+):
+    html_content = render_to_string(
+        "tasks_provided.html",
+        {
+            "fab_name": fab_name,
+            "fab_phone_number": fab_phone_number,
+            "fab_registration_number": fab_registration_number,
+            "fab_district": fab_district,
+            "fab_sub_district": fab_sub_district,
+        },
+    )
+    subject = "New Fabricator Registered - Steeltech"
+
+    EmailThread(
+        subject,
+        html_content,
+        [
+            "ridwan@ongshak.com",
+            "sktanim5800+admin@gmail.com",
+        ],
+        DEFAULT_FROM_EMAIL,
+    ).start()
+
+
+def fab_status_change_notification(
+    fab_name: str,
+    status: str,
+    date: str,
+    fab_email: str,
+):
+    if status not in ["approved", "rejected"]:
+        return
+
+    html_content = render_to_string(
+        "fabricator_status.html",
+        {
+            "fab_name": fab_name,
+            "status": status,
+            "date": date,
+        },
+    )
+    subject = "Status update - Steeltech"
+    EmailThread(
+        subject,
+        html_content,
+        [fab_email],
         DEFAULT_FROM_EMAIL,
     ).start()
