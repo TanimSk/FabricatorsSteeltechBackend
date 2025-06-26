@@ -15,6 +15,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
 import csv
+from django.db.models import Sum, Subquery, OuterRef, Case, When, IntegerField
+from datetime import datetime, timedelta
+from collections import OrderedDict
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -813,80 +816,105 @@ class ReportView(APIView):
 
                 return response
 
-            if request.query_params.get("view") == "summary":
-                # Individual subqueries for each distributor field
-                distributor_name = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("distributor__name")[:1]
-                )
-                distributor_phone = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("distributor__phone_number")[:1]
-                )
-                distributor_district = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("distributor__district")[:1]
-                )
-                distributor_sub_district = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("distributor__sub_district")[:1]
-                )
+        if request.query_params.get("view") == "summary":
+            # Individual subqueries for each distributor field
+            distributor_name = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__name")[:1]
+            )
+            distributor_phone = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__phone_number")[:1]
+            )
+            distributor_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__district")[:1]
+            )
+            distributor_sub_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("distributor__sub_district")[:1]
+            )
 
-                # Individual subqueries for each marketing_rep field
-                rep_name = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("marketing_rep__name")[:1]
-                )
-                rep_phone = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("marketing_rep__phone_number")[:1]
-                )
-                rep_district = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("marketing_rep__district")[:1]
-                )
-                rep_sub_district = Subquery(
-                    Reports.objects.filter(fabricator=OuterRef("fabricator"))
-                    .order_by("id")
-                    .values("marketing_rep__sub_district")[:1]
-                )
+            # Individual subqueries for each marketing_rep field
+            rep_name = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__name")[:1]
+            )
+            rep_phone = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__phone_number")[:1]
+            )
+            rep_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__district")[:1]
+            )
+            rep_sub_district = Subquery(
+                Reports.objects.filter(fabricator=OuterRef("fabricator"))
+                .order_by("id")
+                .values("marketing_rep__sub_district")[:1]
+            )
 
-                # date filter
-                report = Reports.objects.all()
-                if from_date and to_date:
-                    report = report.filter(sales_date__range=(from_date, to_date))
+            # Prepare past 12 months
+            now = datetime.now()
+            months = [(now - timedelta(days=30 * i)).replace(day=1) for i in range(11, -1, -1)]
+            months = [(dt.year, dt.month) for dt in months]
 
-                # Final grouped query
-                fabricator_summary = (
-                    report.values(
-                        "fabricator",
-                        "fabricator__name",
-                        "fabricator__registration_number",
-                        "fabricator__phone_number",
-                        "fabricator__district",
-                        "fabricator__sub_district",
+            # Create annotations and headers
+            monthly_annotations = OrderedDict()
+            monthly_headers = []
+            for year, month in months:
+                label = f"{datetime(year, month, 1).strftime('%B')}'{year}"
+                monthly_headers.append(label)
+                key = f"sales_{year}_{month}"
+                monthly_annotations[key] = Sum(
+                    Case(
+                        When(
+                            sales_date__year=year,
+                            sales_date__month=month,
+                            then="amount"
+                        ),
+                        output_field=IntegerField()
                     )
-                    .annotate(
-                        total_amount=Sum("amount"),
-                        distributor_name=distributor_name,
-                        distributor_phone=distributor_phone,
-                        distributor_district=distributor_district,
-                        distributor_sub_district=distributor_sub_district,
-                        marketing_rep_name=rep_name,
-                        marketing_rep_phone=rep_phone,
-                        marketing_rep_district=rep_district,
-                        marketing_rep_sub_district=rep_sub_district,
-                    )
-                    .order_by("-total_amount")
                 )
 
+            # Filter by date range if provided
+            report = Reports.objects.all()
+            if from_date and to_date:
+                report = report.filter(sales_date__range=(from_date, to_date))
+
+            # Final query with summary
+            fabricator_summary = (
+                report.values(
+                    "fabricator",
+                    "fabricator__name",
+                    "fabricator__registration_number",
+                    "fabricator__phone_number",
+                    "fabricator__district",
+                    "fabricator__sub_district",
+                )
+                .annotate(
+                    total_amount=Sum("amount"),
+                    distributor_name=distributor_name,
+                    distributor_phone=distributor_phone,
+                    distributor_district=distributor_district,
+                    distributor_sub_district=distributor_sub_district,
+                    marketing_rep_name=rep_name,
+                    marketing_rep_phone=rep_phone,
+                    marketing_rep_district=rep_district,
+                    marketing_rep_sub_district=rep_sub_district,
+                    **monthly_annotations
+                )
+                .order_by("-total_amount")
+            )
+
+            # Write header to CSV
             writer.writerow(
                 [
                     "Fabricator Reg. No.",
@@ -894,7 +922,6 @@ class ReportView(APIView):
                     "Phone Number",
                     "District",
                     "Sub-District",
-                    "Total Amount",
                     "",
                     "Distributor Name",
                     "Distributor Phone Number",
@@ -905,9 +932,13 @@ class ReportView(APIView):
                     "Marketing Representative Phone Number",
                     "Marketing Representative District",
                     "Marketing Representative Sub-District",
+                    "",
+                    *monthly_headers,
+                    "Total Amount",
                 ]
             )
 
+            # Write rows
             for summary in fabricator_summary:
                 writer.writerow(
                     [
@@ -916,7 +947,6 @@ class ReportView(APIView):
                         summary["fabricator__phone_number"],
                         summary["fabricator__district"],
                         summary["fabricator__sub_district"],
-                        summary["total_amount"],
                         "",
                         summary["distributor_name"],
                         summary["distributor_phone"],
@@ -927,6 +957,9 @@ class ReportView(APIView):
                         summary["marketing_rep_phone"],
                         summary["marketing_rep_district"],
                         summary["marketing_rep_sub_district"],
+                        "",
+                        *[summary.get(f"sales_{year}_{month}", 0) for year, month in months],
+                        summary["total_amount"],
                     ]
                 )
 
