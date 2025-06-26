@@ -10,12 +10,11 @@ from fabricator.models import Fabricator
 class MarketingRepresentativeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MarketingRepresentative
-        fields = "__all__"
+        exclude = ("marketing_rep",)
         read_only_fields = (
             "id",
             "created_at",
         )
-        exclude = ("marketing_rep",)
 
     def get_fields(self):
         fields = super().get_fields()
