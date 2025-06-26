@@ -889,16 +889,18 @@ class ReportView(APIView):
 
             writer.writerow(
                 [
+                    "Fabricator Reg. No.",
                     "Fabricator Name",
-                    "Registration Number",
                     "Phone Number",
                     "District",
                     "Sub-District",
                     "Total Amount",
+                    "",
                     "Distributor Name",
                     "Distributor Phone Number",
                     "Distributor District",
                     "Distributor Sub-District",
+                    "",
                     "Marketing Representative Name",
                     "Marketing Representative Phone Number",
                     "Marketing Representative District",
@@ -909,16 +911,18 @@ class ReportView(APIView):
             for summary in fabricator_summary:
                 writer.writerow(
                     [
-                        summary["fabricator__name"],
                         summary["fabricator__registration_number"],
+                        summary["fabricator__name"],
                         summary["fabricator__phone_number"],
                         summary["fabricator__district"],
                         summary["fabricator__sub_district"],
                         summary["total_amount"],
+                        "",
                         summary["distributor_name"],
                         summary["distributor_phone"],
                         summary["distributor_district"],
                         summary["distributor_sub_district"],
+                        "",
                         summary["marketing_rep_name"],
                         summary["marketing_rep_phone"],
                         summary["marketing_rep_district"],
