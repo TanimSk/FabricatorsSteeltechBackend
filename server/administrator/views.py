@@ -864,7 +864,9 @@ class ReportView(APIView):
 
             # Prepare past 12 months
             now = datetime.now()
-            months = [(now - timedelta(days=30 * i)).replace(day=1) for i in range(11, -1, -1)]
+            months = [
+                (now - timedelta(days=30 * i)).replace(day=1) for i in range(11, -1, -1)
+            ]
             months = [(dt.year, dt.month) for dt in months]
 
             # Create annotations and headers
@@ -879,9 +881,9 @@ class ReportView(APIView):
                         When(
                             sales_date__year=year,
                             sales_date__month=month,
-                            then="amount"
+                            then="amount",
                         ),
-                        output_field=IntegerField()
+                        output_field=IntegerField(),
                     )
                 )
 
@@ -910,7 +912,7 @@ class ReportView(APIView):
                     marketing_rep_phone=rep_phone,
                     marketing_rep_district=rep_district,
                     marketing_rep_sub_district=rep_sub_district,
-                    **monthly_annotations
+                    **monthly_annotations,
                 )
                 .order_by("-total_amount")
             )
@@ -959,7 +961,10 @@ class ReportView(APIView):
                         summary["marketing_rep_district"],
                         summary["marketing_rep_sub_district"],
                         "",
-                        *[summary.get(f"sales_{year}_{month}", 0) for year, month in months],
+                        *[
+                            summary.get(f"sales_{year}_{month}", 0)
+                            for year, month in months
+                        ],
                         summary["total_amount"],
                     ]
                 )
@@ -970,9 +975,13 @@ class ReportView(APIView):
 class SubDistrictView(APIView):
     def get(self, request, *args, **kwargs):
         if request.query_params.get("view") == "districts":
-            districts = dist_upazila_map.districts
+            districts = list(dist_upazila_map.dist_upazila_map.keys())
+            formatted_districts = [
+                {"id": index, "name": district["name"]}
+                for index, district in enumerate(districts, start=1)
+            ]
             return JsonResponse(
-                {"success": True, "districts": districts.get("districts", [])},
+                {"success": True, "districts": formatted_districts},
                 status=status.HTTP_200_OK,
             )
         if request.query_params.get("view") == "thanas":
@@ -982,12 +991,24 @@ class SubDistrictView(APIView):
                     {"success": False, "message": "District ID parameter is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            upazilas_thanas = dist_upazila_map.upazilas_thanas.get("upazilas", [])
+            target_district = list(dist_upazila_map.dist_upazila_map.keys()).get(
+                int(district_id) - 1, []
+            )
+            if not target_district:
+                return JsonResponse(
+                    {"success": False, "message": "District not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             wanted_upazilas = []
+            upazilas_thanas = dist_upazila_map.dist_upazila_map[target_district]
 
-            for upazila in upazilas_thanas:
-                if upazila["district_id"] == district_id:
-                    wanted_upazilas.append(upazila)
+            for index, upazila in enumerate(upazilas_thanas, start=1):
+                wanted_upazilas.append(
+                    {
+                        "id": index,
+                        "name": upazila,
+                    }
+                )
 
             if wanted_upazilas:
                 return JsonResponse(
