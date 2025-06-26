@@ -10,6 +10,8 @@ from dj_rest_auth.registration.views import RegisterView
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils import timezone
+from django.db import transaction
+
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -40,17 +42,17 @@ class FabricatorView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            # send email notification to admin
-            fab_registered_notification(
-                fab_name=serializer.validated_data["name"],
-                fab_phone_number=serializer.validated_data["phone_number"],
-                fab_registration_number=serializer.validated_data[
-                    "registration_number"
-                ],
-                fab_district=serializer.validated_data["district"],
-                fab_sub_district=serializer.validated_data["sub_district"],
-            )
+            with transaction.atomic():
+                fab_instance = serializer.save()
+
+                # send email notification to admin
+                fab_registered_notification(
+                    fab_name=fab_instance.name,
+                    fab_phone_number=fab_instance.phone_number,
+                    fab_registration_number=fab_instance.registration_number,
+                    fab_district=fab_instance.district,
+                    fab_sub_district=fab_instance.sub_district,
+                )
             return Response(
                 {
                     "success": True,
