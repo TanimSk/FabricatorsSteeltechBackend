@@ -977,7 +977,7 @@ class SubDistrictView(APIView):
         if request.query_params.get("view") == "districts":
             districts = list(dist_upazila_map.dist_upazila_map.keys())
             formatted_districts = [
-                {"id": index, "name": district["name"]}
+                {"id": index, "name": district}
                 for index, district in enumerate(districts, start=1)
             ]
             return JsonResponse(
