@@ -95,7 +95,9 @@ class DashboardView(APIView):
                 "marketing_representatives_count": marketing_representatives_count,
                 "distributors_count": distributors_count,
                 "sales_vs_date_graph": list(sales_vs_date_graph),
-                "sales_vs_fabricator_graph": list(sales_vs_fabricator_graph),
+                "sales_vs_fabricator_graph": list(sales_vs_fabricator_graph)[
+                    :10
+                ],  # Limit to top 10 fabricators
             },
             status=status.HTTP_200_OK,
         )
