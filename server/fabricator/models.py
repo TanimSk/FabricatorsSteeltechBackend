@@ -51,6 +51,9 @@ class Fabricator(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
     # create a unique registration number
     def save(self, *args, **kwargs):
         if not self.registration_number:
