@@ -134,7 +134,8 @@ class FabricatorView(APIView):
             fabricators = Fabricator.objects.all().order_by("-created_at")
         elif request.query_params.get("view") == "assigned":
             fabricators = Fabricator.objects.filter(
-                marketing_representative__isnull=False
+                status="approved",
+                marketing_representative__isnull=False,
             ).order_by("-created_at")
 
         else:
