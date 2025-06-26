@@ -991,10 +991,11 @@ class SubDistrictView(APIView):
                     {"success": False, "message": "District ID parameter is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            target_district = list(dist_upazila_map.dist_upazila_map.keys()).get(
-                int(district_id) - 1, []
-            )
-            if not target_district:
+            try:
+                target_district = list(dist_upazila_map.dist_upazila_map.keys())[
+                    int(district_id) - 1
+                ]
+            except (IndexError, ValueError):
                 return JsonResponse(
                     {"success": False, "message": "District not found."},
                     status=status.HTTP_404_NOT_FOUND,
