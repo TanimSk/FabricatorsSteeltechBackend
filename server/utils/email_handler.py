@@ -142,7 +142,7 @@ def fab_registered_notification(
     fab_sub_district: str,
 ):
     html_content = render_to_string(
-        "tasks_provided.html",
+        "fabricator_registered.html",
         {
             "fab_name": fab_name,
             "fab_phone_number": fab_phone_number,
