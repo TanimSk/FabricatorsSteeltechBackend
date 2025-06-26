@@ -785,13 +785,14 @@ class ReportView(APIView):
 
                 return response
 
+            # TODO: its actually distributors
             elif request.query_params.get("view") == "marketing_representatives":
                 reports = Reports.objects.all().order_by("-sales_date")
                 if from_date and to_date:
                     report = report.filter(sales_date__range=(from_date, to_date))
                 writer.writerow(
                     [
-                        "Marketing Representative Name",
+                        "Dist. Name",
                         "Phone Number",
                         "District",
                         "Sub-District",
@@ -804,10 +805,10 @@ class ReportView(APIView):
                 for report in reports:
                     writer.writerow(
                         [
-                            report.marketing_rep.name,
-                            report.marketing_rep.phone_number,
-                            report.marketing_rep.district,
-                            report.marketing_rep.sub_district,
+                            report.distributor.name,
+                            report.distributor.phone_number,
+                            report.distributor.district,
+                            report.distributor.sub_district,
                             report.sales_date.strftime("%Y-%m-%d"),
                             report.amount,
                             report.invoice_number,
