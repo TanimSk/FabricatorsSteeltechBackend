@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 import uuid
+import random
 
 
 class MarketingRepresentative(models.Model):
@@ -20,6 +21,20 @@ class MarketingRepresentative(models.Model):
     sub_district = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    employee_id = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+    )
+
+    def save(self, *args, **kwargs):
+        """
+        Override save method to generate a unique employee ID if not provided.
+        """
+        if not self.employee_id:
+            # Generate a unique employee ID based on the count of existing reps
+            self.employee_id = f"{random.randint(10, 99)}{MarketingRepresentative.objects.count() + 1:04d}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

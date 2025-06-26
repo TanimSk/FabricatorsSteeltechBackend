@@ -24,6 +24,7 @@ from rest_framework.permissions import AllowAny
 # models
 from marketing_rep.models import Reports, RecentActivity, Task
 from fabricator.models import Fabricator
+from distributor.models import Distributor
 
 # serializers
 from marketing_rep.serializers import (
@@ -73,25 +74,17 @@ class DashboardView(APIView):
             recent_activities, many=True
         ).data
 
-        monthly_sales = (
-            Reports.objects.filter(
-                marketing_rep=marketing_rep,
-                created_at__month=timezone.now().month,
-                created_at__year=timezone.now().year,
-            )
-            .aggregate(total_sales=Sum("amount"))
-            .get("total_sales") or Decimal("0.00")
-        )
+        monthly_sales = Reports.objects.filter(
+            marketing_rep=marketing_rep,
+            created_at__month=timezone.now().month,
+            created_at__year=timezone.now().year,
+        ).aggregate(total_sales=Sum("amount")).get("total_sales") or Decimal("0.00")
 
-        last_month_sales = (
-            Reports.objects.filter(
-                marketing_rep=marketing_rep,
-                created_at__month=timezone.now().month - 1,
-                created_at__year=timezone.now().year,
-            )
-            .aggregate(total_sales=Sum("amount"))
-            .get("total_sales") or Decimal("0.00")
-        )
+        last_month_sales = Reports.objects.filter(
+            marketing_rep=marketing_rep,
+            created_at__month=timezone.now().month - 1,
+            created_at__year=timezone.now().year,
+        ).aggregate(total_sales=Sum("amount")).get("total_sales") or Decimal("0.00")
 
         if last_month_sales == 0:
             revenue_change_percentage = "N/A"
@@ -139,9 +132,20 @@ class ReportsView(APIView):
                 "id",
                 "name",
                 "registration_number",
-                "distributor__name",
             )
             return Response(fabricators, status=status.HTTP_200_OK)
+
+        elif request.query_params.get("view") == "distributors":
+            distributors = Distributor.objects.filter(
+                marketing_representative=request.user.marketingrepresentative
+            ).values(
+                "id",
+                "name",
+                "phone_number",
+                "district",
+                "sub_district",
+            )
+            return Response(distributors, status=status.HTTP_200_OK)
 
     def post(self, request):
         """
@@ -149,6 +153,21 @@ class ReportsView(APIView):
         """
         serializer = ReportsSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
+
+            # validate if distributor was under the marketing representative
+            distributor = serializer.validated_data.get("distributor")
+            if not Distributor.objects.filter(
+                id=distributor.id,
+                marketing_representative=request.user.marketingrepresentative,
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Distributor does not belong to this marketing representative.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             serializer.save(marketing_rep=request.user.marketingrepresentative)
             # record recent activity
             RecentActivity.objects.create(

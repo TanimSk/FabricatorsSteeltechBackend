@@ -18,6 +18,7 @@ import csv
 from django.db.models import Sum, Subquery, OuterRef, Case, When, IntegerField
 from datetime import datetime, timedelta
 from collections import OrderedDict
+import random
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -299,15 +300,74 @@ class MarketingRepresentativeView(APIView):
             return paginator.get_paginated_response(serializer.data)
 
         if request.query_params.get("id"):
+            if request.query_params.get("view") == "assigned-fabricators":
+                if not request.query_params.get("id"):
+                    return JsonResponse(
+                        {"success": False, "message": "ID parameter is required."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                try:
+                    rep = MarketingRepresentative.objects.get(
+                        id=request.query_params.get("id")
+                    )
+                except MarketingRepresentative.DoesNotExist:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": "Marketing Representative not found.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                fabricators = Fabricator.objects.filter(
+                    marketing_representative=rep
+                ).order_by("-created_at")
+                paginator = StandardResultsSetPagination()
+                result_page = paginator.paginate_queryset(fabricators, request)
+                serializer = FabricatorSerializer(result_page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+
+            if request.query_params.get("view") == "assigned-distributors":
+                if not request.query_params.get("id"):
+                    return JsonResponse(
+                        {"success": False, "message": "ID parameter is required."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                try:
+                    rep = MarketingRepresentative.objects.get(
+                        id=request.query_params.get("id")
+                    )
+                except MarketingRepresentative.DoesNotExist:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": "Marketing Representative not found.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                distributors = Distributor.objects.filter(
+                    marketing_representative=rep
+                ).order_by("-created_at")
+                paginator = StandardResultsSetPagination()
+                result_page = paginator.paginate_queryset(distributors, request)
+                serializer = DistributorSerializer(result_page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+
             rep_id = request.query_params.get("id")
             try:
                 rep = MarketingRepresentative.objects.get(id=rep_id)
                 fab_count = Fabricator.objects.filter(
                     marketing_representative=rep
                 ).count()
+                dist_count = Distributor.objects.filter(
+                    marketing_representative=rep
+                ).count()
                 serializer = MarketingRepresentativeSerializer(rep)
                 return Response(
-                    {"assigned_fabricators_count": fab_count, **serializer.data},
+                    {
+                        "assigned_fabricators_count": fab_count,
+                        "assigned_distributors_count": dist_count,
+                        **serializer.data,
+                    },
                     status=status.HTTP_200_OK,
                 )
             except MarketingRepresentative.DoesNotExist:
@@ -360,6 +420,51 @@ class MarketingRepresentativeView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
+        if request.query_params.get("action") == "assign-distributor":
+            distributors = request.data.get("distributors", [])
+            if not distributors:
+                return JsonResponse(
+                    {"success": False, "message": "Distributors list is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            mar_id = request.query_params.get("id")
+            if not mar_id:
+                return JsonResponse(
+                    {"success": False, "message": "ID parameter is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                rep = MarketingRepresentative.objects.get(id=mar_id)
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            for dist_id in distributors:
+                try:
+                    dist = Distributor.objects.get(id=dist_id)
+                except Distributor.DoesNotExist:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": f"Distributor with ID {dist_id} not found.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                dist.marketing_representative = rep
+                dist.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Distributors assigned to Marketing Representative successfully.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         serializer = MarketingRepresentativeSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
 
@@ -377,7 +482,7 @@ class MarketingRepresentativeView(APIView):
 
             # create a new user for the marketing representative with password
             User = get_user_model()
-            random_password = get_random_string(length=6)
+            random_password = f"S{random.randint(0, 9)}{str(MarketingRepresentative.objects.count() + 1).zfill(4)}"
             user_instance = User.objects.create_user(
                 username=serializer.validated_data["email"],
                 password=random_password,

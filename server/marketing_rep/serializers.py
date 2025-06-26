@@ -14,8 +14,8 @@ class MarketingRepresentativeSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "created_at",
-            "marketing_rep",
         )
+        exclude = ("marketing_rep",)
 
     def get_fields(self):
         fields = super().get_fields()
@@ -69,10 +69,7 @@ class ReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
         fields = "__all__"
-        read_only_fields = (
-            "distributor",
-            "marketing_rep",
-        )
+        read_only_fields = ("marketing_rep",)
 
     def __init__(self, *args, **kwargs):
         # Accept an optional context variable to exclude `promo_code`
@@ -84,17 +81,12 @@ class ReportsSerializer(serializers.ModelSerializer):
                 if key in self.fields:
                     self.fields.pop(key, None)
 
-    def create(self, validated_data):
-        # Create a new report instance
-        distributor = validated_data.get("fabricator").distributor
-        report = Reports.objects.create(**validated_data, distributor=distributor)
-        return report
-
 
 class RecentActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = RecentActivity
         fields = "__all__"
+
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
