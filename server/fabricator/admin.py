@@ -5,7 +5,8 @@ from .models import Fabricator
 class FabricatorAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'institution', 'phone_number', 'registration_number',
-        'district', 'sub_district', 'status', 'created_at'
+        'district', 'sub_district', 'status', 'created_at',
+        'distributor', 'marketing_representative'
     )
     search_fields = ('name', 'institution', 'phone_number', 'registration_number')
     list_filter = ('status', 'district', 'sub_district')
