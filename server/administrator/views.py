@@ -116,15 +116,13 @@ class FabricatorView(APIView):
                     {"success": False, "message": "Fabricator not found."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-
         if request.query_params.get("view") == "pending":
             fabricators = Fabricator.objects.filter(status="pending").order_by(
                 "-created_at"
             )
-
         elif request.query_params.get("view") == "approved":
             fabricators = Fabricator.objects.filter(
-                status="approved", marketing_representative__isnull=True
+                status="approved",
             ).order_by("-created_at")
         elif request.query_params.get("view") == "rejected":
             fabricators = Fabricator.objects.filter(status="rejected").order_by(
