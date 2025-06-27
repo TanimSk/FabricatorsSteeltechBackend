@@ -968,12 +968,43 @@ class ReportView(APIView):
                 .values("marketing_rep__sub_district")[:1]
             )
 
-            # Prepare past 12 months
-            now = datetime.now()
-            months = [
-                (now - timedelta(days=30 * i)).replace(day=1) for i in range(11, -1, -1)
-            ]
-            months = [(dt.year, dt.month) for dt in months]
+            if not from_date or not to_date:
+                try:
+                    from_date = timezone.datetime.fromisoformat(from_date)
+                    to_date = timezone.datetime.fromisoformat(to_date)
+                except ValueError:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": "Invalid date format. Use ISO format (YYYY-MM-DD).",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                # list of months of from date to to_date
+                months = []
+                from_month = from_date.month
+                from_year = from_date.year
+                to_month = to_date.month
+                to_year = to_date.year
+
+                while (from_year < to_year) or (
+                    from_year == to_year and from_month <= to_month
+                ):
+                    months.append((from_year, from_month))
+                    from_month += 1
+                    if from_month > 12:
+                        from_month = 1
+                        from_year += 1
+
+            else:
+                # Prepare past 12 months
+                now = datetime.now()
+                months = [
+                    (now - timedelta(days=30 * i)).replace(day=1)
+                    for i in range(11, -1, -1)
+                ]
+                months = [(dt.year, dt.month) for dt in months]
 
             # Create annotations and headers
             monthly_annotations = OrderedDict()
