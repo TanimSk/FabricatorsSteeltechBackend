@@ -60,7 +60,16 @@ class DashboardView(APIView):
         """
         Get the dashboard data for the marketing representative.
         """
-        marketing_rep = request.user.marketingrepresentative
+        try:
+            marketing_rep = request.user.marketingrepresentative
+        except AttributeError:
+            return Response(
+                {
+                    "success": False,
+                    "message": "User is not a marketing representative.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         assigned_fabricators = Fabricator.objects.filter(
             marketing_representative=marketing_rep
@@ -128,7 +137,7 @@ class ReportsView(APIView):
         if request.query_params.get("view") == "fabricators":
             fabricators = Fabricator.objects.filter(
                 marketing_representative=request.user.marketingrepresentative,
-                status="approved"
+                status="approved",
             ).values(
                 "id",
                 "name",
