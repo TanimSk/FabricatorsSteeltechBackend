@@ -968,19 +968,7 @@ class ReportView(APIView):
                 .values("marketing_rep__sub_district")[:1]
             )
 
-            if not from_date or not to_date:
-                try:
-                    from_date = timezone.datetime.fromisoformat(from_date)
-                    to_date = timezone.datetime.fromisoformat(to_date)
-                except ValueError:
-                    return JsonResponse(
-                        {
-                            "success": False,
-                            "message": "Invalid date format. Use ISO format (YYYY-MM-DD).",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
+            if from_date and to_date:
                 # list of months of from date to to_date
                 months = []
                 from_month = from_date.month
