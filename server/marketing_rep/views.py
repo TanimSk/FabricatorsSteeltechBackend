@@ -116,6 +116,7 @@ class DashboardView(APIView):
             {
                 "success": True,
                 "assigned_fabricators": assigned_fabricators,
+                "name": marketing_rep.name,
                 "monthly_sales": monthly_sales,
                 "total_reports": total_reports,
                 "revenue_change_percentage": revenue_change_percentage,
