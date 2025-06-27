@@ -491,7 +491,9 @@ class MarketingRepresentativeView(APIView):
                 is_marketing_representative=True,
             )
 
-            serializer.save(marketing_rep=user_instance)
+            mar = serializer.save(marketing_rep=user_instance)
+            mar.password_txt = random_password
+            mar.save()
 
             # send email to the marketing representative with login credentials
             send_login_credentials(

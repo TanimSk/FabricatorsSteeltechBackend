@@ -21,6 +21,11 @@ class MarketingRepresentative(models.Model):
     sub_district = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    password_txt = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True,        
+    )
     employee_id = models.CharField(
         max_length=20,
         blank=True,
