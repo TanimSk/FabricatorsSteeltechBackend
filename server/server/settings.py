@@ -120,7 +120,7 @@ DATABASES = {
     # postgres example
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "travonus",
+        "NAME": "steeltech_fab",
         "USER": os.getenv("USERNAME_DB"),
         "PASSWORD": os.getenv("PASSWORD_DB"),
         "HOST": "localhost",
