@@ -127,7 +127,8 @@ class ReportsView(APIView):
         """
         if request.query_params.get("view") == "fabricators":
             fabricators = Fabricator.objects.filter(
-                marketing_representative=request.user.marketingrepresentative
+                marketing_representative=request.user.marketingrepresentative,
+                status="approved"
             ).values(
                 "id",
                 "name",
