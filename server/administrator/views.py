@@ -231,14 +231,14 @@ class FabricatorView(APIView):
                 )
 
             # check if the fabricator is already assigned to a marketing representative
-            if fabricator.marketing_representative:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Fabricator is already assigned to a Marketing Representative.",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # if fabricator.marketing_representative:
+            #     return JsonResponse(
+            #         {
+            #             "success": False,
+            #             "message": "Fabricator is already assigned to a Marketing Representative.",
+            #         },
+            #         status=status.HTTP_400_BAD_REQUEST,
+            #     )
             # check if the fabricator is approved
             if fabricator.status != "approved":
                 return JsonResponse(
