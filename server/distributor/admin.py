@@ -1,3 +1,4 @@
 from django.contrib import admin
+from distributor.models import Distributor
 
-# Register your models here.
+admin.site.register(Distributor)
