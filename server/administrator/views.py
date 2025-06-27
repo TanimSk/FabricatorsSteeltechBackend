@@ -835,8 +835,8 @@ class ReportView(APIView):
         )
 
     def post(self, request, *args, **kwargs):
-        from_date = request.data.get("from_date")
-        to_date = request.data.get("to_date")
+        from_date = request.GET.get("from_date")
+        to_date = request.GET.get("to_date")
 
         if from_date and to_date:
             try:
