@@ -143,7 +143,7 @@ class ReportsView(APIView):
                 "id",
                 "name",
                 "registration_number",
-            )
+            ).order_by("name")
             return Response(fabricators, status=status.HTTP_200_OK)
 
         elif request.query_params.get("view") == "distributors":
@@ -155,7 +155,7 @@ class ReportsView(APIView):
                 "phone_number",
                 "district",
                 "sub_district",
-            )
+            ).order_by("name")
             return Response(distributors, status=status.HTTP_200_OK)
 
     def post(self, request):
