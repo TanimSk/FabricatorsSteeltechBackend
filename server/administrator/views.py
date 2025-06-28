@@ -859,31 +859,33 @@ class ReportView(APIView):
             writer = csv.writer(response)
 
             if request.query_params.get("view") == "fabricators":
-                reports = MarketingRepresentative.objects.all().order_by("-created_at")
+                reports = Reports.objects.all().order_by("-sales_date")
                 if from_date and to_date:
-                    reports = reports.filter(created_at__range=(from_date, to_date))
+                    report = reports.filter(sales_date__range=(from_date, to_date))
                 writer.writerow(
                     [
-                        "MR name",                        
-                        "MR Email",
-                        "Password",
+                        "Fabricator Name",
+                        "Registration Number",
                         "Phone Number",
                         "District",
                         "Sub-District",
-                        "Created At",                        
+                        "Sales Date",
+                        "Amount",
+                        "Invoice Number",
                     ]
                 )
 
                 for report in reports:
                     writer.writerow(
                         [
-                            report.name,
-                            report.email,
-                            report.password_txt,
-                            report.phone_number,
-                            report.district,
-                            report.sub_district,
-                            report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                            report.fabricator.name,
+                            report.fabricator.registration_number,
+                            report.fabricator.phone_number,
+                            report.fabricator.district,
+                            report.fabricator.sub_district,
+                            report.sales_date.strftime("%Y-%m-%d"),
+                            report.amount,
+                            report.invoice_number,
                         ]
                     )
 
@@ -893,7 +895,7 @@ class ReportView(APIView):
             elif request.query_params.get("view") == "marketing_representatives":
                 reports = Reports.objects.all().order_by("-sales_date")
                 if from_date and to_date:
-                    report = report.filter(sales_date__range=(from_date, to_date))
+                    reports = reports.filter(sales_date__range=(from_date, to_date))
                 writer.writerow(
                     [
                         "Dist. Name",
