@@ -859,33 +859,31 @@ class ReportView(APIView):
             writer = csv.writer(response)
 
             if request.query_params.get("view") == "fabricators":
-                reports = Reports.objects.all().order_by("-sales_date")
+                reports = MarketingRepresentative.objects.all().order_by("-created_at")
                 if from_date and to_date:
                     report = report.filter(sales_date__range=(from_date, to_date))
                 writer.writerow(
                     [
-                        "Fabricator Name",
-                        "Registration Number",
+                        "MR name",                        
+                        "MR Email",
+                        "Password",
                         "Phone Number",
                         "District",
                         "Sub-District",
-                        "Sales Date",
-                        "Amount",
-                        "Invoice Number",
+                        "Created At",                        
                     ]
                 )
 
                 for report in reports:
                     writer.writerow(
                         [
-                            report.fabricator.name,
-                            report.fabricator.registration_number,
-                            report.fabricator.phone_number,
-                            report.fabricator.district,
-                            report.fabricator.sub_district,
-                            report.sales_date.strftime("%Y-%m-%d"),
-                            report.amount,
-                            report.invoice_number,
+                            report.name,
+                            report.email,
+                            report.password_txt,
+                            report.phone_number,
+                            report.district,
+                            report.sub_district,
+                            report.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                         ]
                     )
 
