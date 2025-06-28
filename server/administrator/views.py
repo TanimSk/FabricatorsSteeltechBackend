@@ -861,7 +861,7 @@ class ReportView(APIView):
             if request.query_params.get("view") == "fabricators":
                 reports = MarketingRepresentative.objects.all().order_by("-created_at")
                 if from_date and to_date:
-                    report = report.filter(sales_date__range=(from_date, to_date))
+                    reports = reports.filter(sales_date__range=(from_date, to_date))
                 writer.writerow(
                     [
                         "MR name",                        
