@@ -136,26 +136,34 @@ class ReportsView(APIView):
         List of fabricators and distributors for option list.
         """
         if request.query_params.get("view") == "fabricators":
-            fabricators = Fabricator.objects.filter(
-                marketing_representative=request.user.marketingrepresentative,
-                status="approved",
-            ).values(
-                "id",
-                "name",
-                "registration_number",
-            ).order_by("name")
+            fabricators = (
+                Fabricator.objects.filter(
+                    marketing_representative=request.user.marketingrepresentative,
+                    status="approved",
+                )
+                .values(
+                    "id",
+                    "name",
+                    "registration_number",
+                )
+                .order_by("name")
+            )
             return Response(fabricators, status=status.HTTP_200_OK)
 
         elif request.query_params.get("view") == "distributors":
-            distributors = Distributor.objects.filter(
-                marketing_representative=request.user.marketingrepresentative
-            ).values(
-                "id",
-                "name",
-                "phone_number",
-                "district",
-                "sub_district",
-            ).order_by("name")
+            distributors = (
+                Distributor.objects.filter(
+                    marketing_representative=request.user.marketingrepresentative
+                )
+                .values(
+                    "id",
+                    "name",
+                    "phone_number",
+                    "district",
+                    "sub_district",
+                )
+                .order_by("name")
+            )
             return Response(distributors, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -175,6 +183,28 @@ class ReportsView(APIView):
                     {
                         "success": False,
                         "message": "Distributor does not belong to this marketing representative.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # check if attachments are provided
+            if not serializer.validated_data.get("attachements_urls"):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Attachments are required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # check invoice number uniqueness
+            if Reports.objects.filter(
+                invoice_number=serializer.validated_data.get("invoice_number")
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "A report with this invoice number already exists.",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
