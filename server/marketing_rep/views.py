@@ -148,11 +148,23 @@ class ReportsView(APIView):
                 marketing_rep=request.user.marketingrepresentative,
             ).order_by("-created_at")
 
+            total_amount = reports.aggregate(total_amount=Sum("amount")).get(
+                "total_amount"
+            ) or Decimal("0.00")
+
             paginator = StandardResultsSetPagination()
             paginated_reports = paginator.paginate_queryset(reports, request)
             serializer = ReportsSerializer(paginated_reports, many=True)
 
-            return paginator.get_paginated_response(serializer.data)
+            response_data = {
+                "success": True,
+                "total_reports": reports.count(),
+                "total_amount": total_amount,
+            }
+            # Add the pagination metadata and results
+            paginated_response = paginator.get_paginated_response(serializer.data)
+            paginated_response.data.update(response_data)
+            return paginated_response
 
         if request.query_params.get("view") == "fabricators":
             fabricators = (
@@ -184,7 +196,7 @@ class ReportsView(APIView):
                 .order_by("name")
             )
             return Response(distributors, status=status.HTTP_200_OK)
-        
+
         return Response(
             {"success": False, "message": "Invalid view parameter."},
             status=status.HTTP_400_BAD_REQUEST,
