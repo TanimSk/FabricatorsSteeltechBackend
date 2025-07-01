@@ -266,3 +266,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Load environment variables
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 TRANSFER_ONGSHAK_API_KEY = os.getenv("TRANSFER_ONGSHAK_API_KEY")
+CLOUD_SMS_API_KEY = os.getenv("CLOUD_SMS_API_KEY")

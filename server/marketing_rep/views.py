@@ -135,6 +135,25 @@ class ReportsView(APIView):
         """
         List of fabricators and distributors for option list.
         """
+        if request.query_params.get("view") == "fabricator-wise-reports":
+            fabricator_id = request.query_params.get("fabricator_id")
+            if not fabricator_id:
+                return Response(
+                    {"success": False, "message": "Fabricator ID is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            reports = Reports.objects.filter(
+                fabricator__id=fabricator_id,
+                marketing_rep=request.user.marketingrepresentative,
+            ).order_by("-created_at")
+
+            paginator = StandardResultsSetPagination()
+            paginated_reports = paginator.paginate_queryset(reports, request)
+            serializer = ReportsSerializer(paginated_reports, many=True)
+
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("view") == "fabricators":
             fabricators = (
                 Fabricator.objects.filter(
