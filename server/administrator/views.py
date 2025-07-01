@@ -113,7 +113,6 @@ class FabricatorView(APIView):
     def get(self, request, *args, **kwargs):
         if request.query_params.get("search"):
             filtered_fabricators = Fabricator.objects.filter(
-                name__icontains=request.query_params.get("search"),
                 **(
                     {
                         "phone_number__icontains": request.query_params.get("search"),
@@ -122,7 +121,9 @@ class FabricatorView(APIView):
                         ),
                     }
                     if request.query_params.get("search").isdigit()
-                    else {}
+                    else {
+                        "name__icontains": request.query_params.get("search"),
+                    }
                 ),
             ).order_by("-created_at")
             paginator = StandardResultsSetPagination()
