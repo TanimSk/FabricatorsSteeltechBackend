@@ -319,7 +319,7 @@ class MarketingRepresentativeView(APIView):
 
         if request.query_params.get("view") == "all-fabricator-list":
             fabricators = Fabricator.objects.filter(
-                approved=True
+                status="approved",
             ).order_by("-created_at")
             return Response(
                 FabricatorSerializer(fabricators, many=True).data,
