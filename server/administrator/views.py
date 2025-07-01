@@ -822,7 +822,7 @@ class UploadFile(APIView):
         url = "https://transfer.ongshak.com/upload/"
         params = {
             "key": settings.TRANSFER_ONGSHAK_API_KEY,
-            "path": "article39",
+            "path": "steeltech",
         }
 
         # if file size exceeds 20MB, return error
