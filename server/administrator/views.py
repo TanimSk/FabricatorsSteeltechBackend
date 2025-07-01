@@ -19,6 +19,7 @@ from django.db.models import Sum, Subquery, OuterRef, Case, When, IntegerField
 from datetime import datetime, timedelta
 from collections import OrderedDict
 import random
+from django.db.models import Q
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -112,20 +113,17 @@ class FabricatorView(APIView):
 
     def get(self, request, *args, **kwargs):
         if request.query_params.get("search"):
-            filtered_fabricators = Fabricator.objects.filter(
-                **(
-                    {
-                        "phone_number__icontains": request.query_params.get("search"),
-                        "registration_number__icontains": request.query_params.get(
-                            "search"
-                        ),
-                    }
-                    if request.query_params.get("search").isdigit()
-                    else {
-                        "name__icontains": request.query_params.get("search"),
-                    }
-                ),
-            ).order_by("-created_at")
+            query = Q()
+            search = request.query_params.get("search").strip()
+
+            if search:
+                if search.isdigit():
+                    # OR query for phone_number and registration_number
+                    query = Q(phone_number__icontains=search) | Q(registration_number__icontains=search)
+                else:
+                    query = Q(name__icontains=search)
+
+            filtered_fabricators = Fabricator.objects.filter(query).order_by("-created_at")
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(filtered_fabricators, request)
             serializer = ExpandedFabricatorSerializer(result_page, many=True)
