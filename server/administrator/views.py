@@ -117,14 +117,12 @@ class FabricatorView(APIView):
             search = request.query_params.get("search").strip()
 
             if search:
-                if search.isdigit():
-                    query = Q(phone_number__icontains=search)
-                else:
-                    query = (
-                        Q(name__icontains=search)
-                        | Q(registration_number__icontains=search)
-                        | Q(district__icontains=search)
-                    )
+                query = (
+                    Q(name__icontains=search)
+                    | Q(registration_number__icontains=search)
+                    | Q(district__icontains=search)
+                    | Q(phone_number__icontains=search)
+                )
 
             filtered_fabricators = Fabricator.objects.filter(query).order_by(
                 "-created_at"
@@ -304,10 +302,11 @@ class MarketingRepresentativeView(APIView):
             search = request.query_params.get("search").strip()
 
             if search:
-                if search.isdigit():
-                    query = Q(phone_number__icontains=search)
-                else:
-                    query = Q(name__icontains=search) | Q(district__icontains=search)
+                query = (
+                    Q(name__icontains=search)
+                    | Q(district__icontains=search)
+                    | Q(phone_number__icontains=search)
+                )
 
             filtered_mar = MarketingRepresentative.objects.filter(query).order_by(
                 "-created_at"
@@ -727,10 +726,11 @@ class DistributorView(APIView):
             search = request.query_params.get("search").strip()
 
             if search:
-                if search.isdigit():
-                    query = Q(phone_number__icontains=search)
-                else:
-                    query = Q(name__icontains=search) | Q(district__icontains=search)
+                query = (
+                    Q(name__icontains=search)
+                    | Q(district__icontains=search)
+                    | Q(phone_number__icontains=search)
+                )
 
             filtered_mar = Distributor.objects.filter(query).order_by("-created_at")
             paginator = StandardResultsSetPagination()
