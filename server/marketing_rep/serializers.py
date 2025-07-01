@@ -91,3 +91,11 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = "__all__"
+
+
+class MarketingRepresentativeRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MarketingRepresentative
+        exclude = ("marketing_rep", "password_txt")
+
+    

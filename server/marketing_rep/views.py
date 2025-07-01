@@ -31,6 +31,7 @@ from marketing_rep.serializers import (
     ReportsSerializer,
     RecentActivitySerializer,
     TaskSerializer,
+    MarketingRepresentativeSerializer,
 )
 
 
@@ -51,6 +52,34 @@ class AuthenticateOnlyMar(BasePermission):
             raise PermissionDenied("User is not an Marketing Representative.")
 
         return True
+
+
+class ProfileView(APIView):
+    permission_classes = [AuthenticateOnlyMar]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Get the profile of the marketing representative.
+        """
+        try:
+            marketing_rep = request.user.marketingrepresentative
+        except AttributeError:
+            return Response(
+                {
+                    "success": False,
+                    "message": "User is not a marketing representative.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = MarketingRepresentativeSerializer(marketing_rep)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class DashboardView(APIView):
