@@ -19,9 +19,8 @@ def pbkdf2_sha256_hash(password: str, iterations: int = 1000000, salt_length: in
     # Format like Django's
     return f"pbkdf2_sha256${iterations}${salt}${hash_b64}"
 
-if __name__ == "__main__":
-    import getpass
-    password = getpass.getpass("Enter password to hash: ")
+if __name__ == "__main__":    
+    password = input("Enter password to hash: ")
     hashed = pbkdf2_sha256_hash(password)
     print("\nHashed password (Django format):")
     print(hashed)
