@@ -420,6 +420,51 @@ class MarketingRepresentativeView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
+        if request.query_params.get("action") == "assign-fabricator":
+            fabricators = request.data.get("fabricators", [])
+            if not fabricators:
+                return JsonResponse(
+                    {"success": False, "message": "Fabricators list is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            mar_id = request.query_params.get("id")
+            if not mar_id:
+                return JsonResponse(
+                    {"success": False, "message": "ID parameter is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                rep = MarketingRepresentative.objects.get(id=mar_id)
+            except MarketingRepresentative.DoesNotExist:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Marketing Representative not found.",
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            for fab_id in fabricators:
+                try:
+                    fab = Fabricator.objects.get(id=fab_id)
+                except Fabricator.DoesNotExist:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": f"Fabricator with ID {fab_id} not found.",
+                        },
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                fab.marketing_representative = rep
+                fab.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Fabricators assigned to Marketing Representative successfully.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         if request.query_params.get("action") == "assign-distributor":
             distributors = request.data.get("distributors", [])
             if not distributors:
@@ -538,9 +583,68 @@ class MarketingRepresentativeView(APIView):
         rep_id = request.query_params.get("id")
         if not rep_id:
             return JsonResponse(
-                {"success": False, "message": "ID parameter is required."},
+                {"success": False, "message": "Mar. ID parameter is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if request.query_params.get("action") == "remove-distributor":
+            if not request.query_params.get("distributor_id"):
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Distributor ID parameter is required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            distributor_id = request.query_params.get("distributor_id")
+            try:
+                distributor = Distributor.objects.get(
+                    id=distributor_id, marketing_representative__id=rep_id
+                )
+            except Distributor.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Distributor not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            distributor.marketing_representative = None
+            distributor.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Distributor removed from Marketing Representative successfully.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if request.query_params.get("action") == "remove-fabricator":
+            if not request.query_params.get("fabricator_id"):
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Fabricator ID parameter is required.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            fabricator_id = request.query_params.get("fabricator_id")
+            try:
+                fabricator = Fabricator.objects.get(
+                    id=fabricator_id, marketing_representative__id=rep_id
+                )
+            except Fabricator.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "message": "Fabricator not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            fabricator.marketing_representative = None
+            fabricator.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Fabricator removed from Marketing Representative successfully.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         try:
             rep = MarketingRepresentative.objects.get(id=rep_id)
 
