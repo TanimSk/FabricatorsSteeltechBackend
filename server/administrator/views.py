@@ -118,12 +118,17 @@ class FabricatorView(APIView):
 
             if search:
                 if search.isdigit():
-                    # OR query for phone_number and registration_number
-                    query = Q(phone_number__icontains=search) | Q(registration_number__icontains=search)
+                    query = Q(phone_number__icontains=search)
                 else:
-                    query = Q(name__icontains=search)
+                    query = (
+                        Q(name__icontains=search)
+                        | Q(registration_number__icontains=search)
+                        | Q(district__icontains=search)
+                    )
 
-            filtered_fabricators = Fabricator.objects.filter(query).order_by("-created_at")
+            filtered_fabricators = Fabricator.objects.filter(query).order_by(
+                "-created_at"
+            )
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(filtered_fabricators, request)
             serializer = ExpandedFabricatorSerializer(result_page, many=True)
@@ -293,6 +298,24 @@ class MarketingRepresentativeView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("search"):
+            query = Q()
+            search = request.query_params.get("search").strip()
+
+            if search:
+                if search.isdigit():
+                    query = Q(phone_number__icontains=search)
+                else:
+                    query = Q(name__icontains=search) | Q(district__icontains=search)
+
+            filtered_mar = MarketingRepresentative.objects.filter(
+                query
+            ).order_by("-created_at")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(filtered_mar, request)
+            serializer = MarketingRepresentativeSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("view") == "tasks":
             if not request.query_params.get("id"):
                 return JsonResponse(
@@ -689,6 +712,24 @@ class DistributorView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("search"):
+            query = Q()
+            search = request.query_params.get("search").strip()
+
+            if search:
+                if search.isdigit():
+                    query = Q(phone_number__icontains=search)
+                else:
+                    query = Q(name__icontains=search) | Q(district__icontains=search)
+
+            filtered_mar = Distributor.objects.filter(
+                query
+            ).order_by("-created_at")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(filtered_mar, request)
+            serializer = DistributorSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("id"):
             distributor_id = request.query_params.get("id")
             try:
