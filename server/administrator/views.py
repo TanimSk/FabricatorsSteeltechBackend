@@ -111,6 +111,25 @@ class FabricatorView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("search"):
+            filtered_fabricators = Fabricator.objects.filter(
+                name__icontains=request.query_params.get("search"),
+                **(
+                    {
+                        "phone_number__icontains": request.query_params.get("search"),
+                        "registration_number__icontains": request.query_params.get(
+                            "search"
+                        ),
+                    }
+                    if request.query_params.get("search").isdigit()
+                    else {}
+                ),
+            ).order_by("-created_at")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(filtered_fabricators, request)
+            serializer = ExpandedFabricatorSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("id"):
             fabricator_id = request.query_params.get("id")
             try:
