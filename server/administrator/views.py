@@ -145,6 +145,13 @@ class FabricatorView(APIView):
                     {"success": False, "message": "Fabricator not found."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
+        if request.query_params.get("view") == "all-fabricator-list":
+            fabricators = Fabricator.objects.all().order_by("-created_at")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(fabricators, request)
+            serializer = FabricatorSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("view") == "pending":
             fabricators = Fabricator.objects.filter(status="pending").order_by(
                 "-created_at"
@@ -308,9 +315,9 @@ class MarketingRepresentativeView(APIView):
                 else:
                     query = Q(name__icontains=search) | Q(district__icontains=search)
 
-            filtered_mar = MarketingRepresentative.objects.filter(
-                query
-            ).order_by("-created_at")
+            filtered_mar = MarketingRepresentative.objects.filter(query).order_by(
+                "-created_at"
+            )
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(filtered_mar, request)
             serializer = MarketingRepresentativeSerializer(result_page, many=True)
@@ -722,9 +729,7 @@ class DistributorView(APIView):
                 else:
                     query = Q(name__icontains=search) | Q(district__icontains=search)
 
-            filtered_mar = Distributor.objects.filter(
-                query
-            ).order_by("-created_at")
+            filtered_mar = Distributor.objects.filter(query).order_by("-created_at")
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(filtered_mar, request)
             serializer = DistributorSerializer(result_page, many=True)
