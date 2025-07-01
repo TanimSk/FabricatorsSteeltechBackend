@@ -82,6 +82,11 @@ class CustomPasswordChangeView(APIView):
             user.set_password(serializer.validated_data["new_password1"])
             user.save()
 
+            if user.is_marketing_representative:
+                # update the marketing representative's password
+                user.marketingrepresentative.password_txt = serializer.validated_data["new_password1"]
+                user.marketingrepresentative.save()
+
             return Response(
                 {"detail": "Password has been changed successfully."},
                 status=status.HTTP_200_OK,
