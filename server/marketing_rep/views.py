@@ -184,6 +184,11 @@ class ReportsView(APIView):
                 .order_by("name")
             )
             return Response(distributors, status=status.HTTP_200_OK)
+        
+        return Response(
+            {"success": False, "message": "Invalid view parameter."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def post(self, request):
         """

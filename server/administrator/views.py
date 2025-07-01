@@ -37,7 +37,7 @@ from marketing_rep.serializers import (
     ReportsSerializer,
     TaskSerializer,
 )
-from distributor.serializers import DistributorSerializer
+from distributor.serializers import DistributorSerializer, SingleDistributorSerializer
 from utils.email_handler import (
     fab_status_change_notification,
     send_login_credentials,
@@ -571,7 +571,7 @@ class DistributorView(APIView):
             distributor_id = request.query_params.get("id")
             try:
                 distributor = Distributor.objects.get(id=distributor_id)
-                serializer = DistributorSerializer(distributor)
+                serializer = SingleDistributorSerializer(distributor)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Distributor.DoesNotExist:
                 return JsonResponse(
