@@ -13,13 +13,12 @@ class DistributorSerializer(serializers.ModelSerializer):
 
 
 class SingleDistributorSerializer(serializers.ModelSerializer):
-    marketing_rep = MarketingRepresentativeSerializer(read_only=True)
+    marketing_representative = MarketingRepresentativeSerializer(read_only=True)
 
     class Meta:
         model = Distributor
         fields = "__all__"
         read_only_fields = (
             "id",
-            "created_at",
-            "marketing_rep",
+            "created_at",            
         )
