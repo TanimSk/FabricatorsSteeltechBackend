@@ -8,7 +8,7 @@ class Distributor(models.Model):
     """
     marketing_representative = models.ForeignKey(
         "marketing_rep.MarketingRepresentative",
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         related_name="distributors",
         blank=True,
         null=True,
