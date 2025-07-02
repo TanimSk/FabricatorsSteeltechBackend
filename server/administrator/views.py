@@ -296,7 +296,7 @@ class FabricatorView(APIView):
                     f"{fabricator.name}\n"
                     f"{fabricator.phone_number}\n"
                     f"Reg. No.: {fabricator.registration_number}\n"                    
-                    f"-STEELTECH"
+                    f"- STEELTECH"
                 ),
             )
 
@@ -621,7 +621,7 @@ class MarketingRepresentativeView(APIView):
                 message=(
                     f"Email: {mar.email}\nPassword: {mar.password_txt}\n"
                     f"Login to the mobile app with this credentials."
-                    f"\n-STEELTECH"
+                    f"\n- STEELTECH"
                 ),
             )
 

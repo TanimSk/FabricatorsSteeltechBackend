@@ -59,7 +59,7 @@ class FabricatorView(APIView):
                 send_sms_via_cloudsms(
                     recipient_number=fab_instance.phone_number,
                     message=(
-                        "Your registration request has been received. The administrator will review your registration request.\n -STEELTECH"
+                        "Your registration request has been received. The administrator will review your registration request.\n - STEELTECH"
                     ),
                 )
 
@@ -72,7 +72,7 @@ class FabricatorView(APIView):
                             f"{fab_instance.name}\n"
                             f"{fab_instance.phone_number}\n"
                             f"Reg. {fab_instance.registration_number}\n"                            
-                            f"-STEELTECH"
+                            f"- STEELTECH"
                         ),
                     )
 
