@@ -26,6 +26,7 @@ from distributor.models import Distributor
 from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import MarketingRepresentativeSerializer
 from distributor.serializers import DistributorSerializer
+from server.utils.sms_handler import send_sms_via_cloudsms
 from utils.email_handler import fab_registered_notification
 
 
@@ -53,6 +54,28 @@ class FabricatorView(APIView):
                     fab_district=fab_instance.district,
                     fab_sub_district=fab_instance.sub_district,
                 )
+
+                # send SMS to the fabricator
+                send_sms_via_cloudsms(
+                    recipient_number=fab_instance.phone_number,
+                    message=(
+                        "Your registration request has been received. The administrator will review your registration request.\n -STEELTECH"
+                    ),
+                )
+
+                # send SMS to the marketing representative if exists
+                if fab_instance.marketing_representative:
+                    send_sms_via_cloudsms(
+                        recipient_number=fab_instance.marketing_representative.phone_number,
+                        message=(
+                            f"Fabricator reg. request received.\n"
+                            f"{fab_instance.name}\n"
+                            f"{fab_instance.phone_number}\n"
+                            f"Reg. {fab_instance.registration_number}\n"                            
+                            f"-STEELTECH"
+                        ),
+                    )
+
             return Response(
                 {
                     "success": True,

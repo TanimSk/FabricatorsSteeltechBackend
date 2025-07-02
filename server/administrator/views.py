@@ -39,6 +39,7 @@ from marketing_rep.serializers import (
     TaskSerializer,
 )
 from distributor.serializers import DistributorSerializer, SingleDistributorSerializer
+from utils.sms_handler import send_sms_via_cloudsms
 from utils.email_handler import (
     fab_status_change_notification,
     send_login_credentials,
@@ -286,6 +287,19 @@ class FabricatorView(APIView):
                 fab_sub_district=fabricator.sub_district,
                 marketing_rep_email=marketing_rep.email,
             )
+
+            # send SMS to marketing representative
+            send_sms_via_cloudsms(
+                recipient_number=marketing_rep.phone_number,
+                message=(
+                    f"Fabricator assigned:\n"
+                    f"{fabricator.name}\n"
+                    f"{fabricator.phone_number}\n"
+                    f"Reg. No.: {fabricator.registration_number}\n"                    
+                    f"-STEELTECH"
+                ),
+            )
+
             return JsonResponse(
                 {
                     "success": True,
@@ -600,6 +614,15 @@ class MarketingRepresentativeView(APIView):
                 username=serializer.validated_data["name"],
                 email=serializer.validated_data["email"],
                 password=random_password,
+            )
+            # send SMS
+            send_sms_via_cloudsms(
+                recipient_number=mar.phone_number,
+                message=(
+                    f"Email: {mar.email}\nPassword: {mar.password_txt}\n"
+                    f"Login to the mobile app with this credentials."
+                    f"\n-STEELTECH"
+                ),
             )
 
             return Response(

@@ -11,8 +11,10 @@ class MarketingRepresentative(models.Model):
 
     marketing_rep = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="marketingrepresentative",
+        null=True,
+        blank=True,
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=512)
@@ -24,7 +26,7 @@ class MarketingRepresentative(models.Model):
     password_txt = models.CharField(
         max_length=512,
         blank=True,
-        null=True,        
+        null=True,
     )
     employee_id = models.CharField(
         max_length=20,

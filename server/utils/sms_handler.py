@@ -29,14 +29,18 @@ def send_sms_via_cloudsms(recipient_number, message):
         "message": message,
         "recipient": recipient_number,
     }
-
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    print(response.text, response.status_code)
-    if response.status_code != 201:
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(response.text, response.status_code)
+        if response.status_code != 201:
+            return {
+                "success": False,
+            }
+        return response.json()
+    except requests.RequestException as e:
         return {
             "success": False,
         }
-    return response.json()
 
 
 # Bulksmsbd API
