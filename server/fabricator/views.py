@@ -26,7 +26,7 @@ from distributor.models import Distributor
 from fabricator.serializers import FabricatorSerializer
 from marketing_rep.serializers import MarketingRepresentativeSerializer
 from distributor.serializers import DistributorSerializer
-from server.utils.sms_handler import send_sms_via_cloudsms
+from utils.sms_handler import send_sms_via_cloudsms
 from utils.email_handler import fab_registered_notification
 
 
