@@ -730,6 +730,7 @@ class MarketingRepresentativeView(APIView):
             if rep.marketing_rep:
                 user = rep.marketing_rep
                 user.delete()
+            rep.delete()
 
             return JsonResponse(
                 {
