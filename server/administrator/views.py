@@ -302,11 +302,14 @@ class MarketingRepresentativeView(APIView):
             search = request.query_params.get("search").strip()
 
             if search:
-                query = (
-                    Q(name__icontains=search)
-                    | Q(district__icontains=search)
-                    | Q(phone_number__icontains=search)
-                )
+                if "@" in search:
+                    query = Q(email__icontains=search)
+                else:
+                    query = (
+                        Q(name__icontains=search)
+                        | Q(district__icontains=search)
+                        | Q(phone_number__icontains=search)
+                    )
 
             filtered_mar = MarketingRepresentative.objects.filter(query).order_by(
                 "-created_at"
