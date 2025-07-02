@@ -206,6 +206,8 @@ class FabricatorView(APIView):
             # send email notification to the fabricator if status is approved or rejected
             fab_status_change_notification(
                 fab_name=fabricator.name,
+                phone_number=fabricator.phone_number,
+                registration_number=fabricator.registration_number,
                 status=fstatus,
                 date=fabricator.created_at.strftime("%Y-%m-%d"),
                 fab_email=(

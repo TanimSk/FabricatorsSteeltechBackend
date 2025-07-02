@@ -20,7 +20,7 @@ class EmailThread(threading.Thread):
         self.subject = subject
         self.recipient_list = recipient_list
         self.html_content = html_content
-        self.sender = f"Steeltech <{sender}>"
+        self.sender = sender
         self.images = images
         self.pdfs = pdfs
         threading.Thread.__init__(self)
@@ -166,6 +166,8 @@ def fab_registered_notification(
 
 def fab_status_change_notification(
     fab_name: str,
+    phone_number: str,
+    registration_number: str,
     status: str,
     date: str,
     fab_email: str,
@@ -177,6 +179,8 @@ def fab_status_change_notification(
         "fabricator_status.html",
         {
             "fab_name": fab_name,
+            "phone_number": phone_number,
+            "registration_number": registration_number,
             "status": status,
             "date": date,
         },
