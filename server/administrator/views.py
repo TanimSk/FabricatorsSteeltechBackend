@@ -295,7 +295,7 @@ class FabricatorView(APIView):
                     f"Fabricator assigned:\n"
                     f"{fabricator.name}\n"
                     f"{fabricator.phone_number}\n"
-                    f"Reg. No.: {fabricator.registration_number}\n"                    
+                    f"Reg. No.: {fabricator.registration_number}\n"
                     f"- STEELTECH"
                 ),
             )
@@ -725,12 +725,11 @@ class MarketingRepresentativeView(APIView):
 
         try:
             rep = MarketingRepresentative.objects.get(id=rep_id)
-
+            rep.delete()
             # Also delete the associated user
             if rep.marketing_rep:
                 user = rep.marketing_rep
-                rep.delete()
-                user.delete()            
+                user.delete()
 
             return JsonResponse(
                 {
