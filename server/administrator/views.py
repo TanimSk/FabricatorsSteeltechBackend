@@ -217,6 +217,31 @@ class FabricatorView(APIView):
                     else None
                 ),
             )
+
+            # send SMS to the fabricator & mar if status is approved or rejected
+            if fstatus in ["approved", "rejected"]:
+                send_sms_via_cloudsms(
+                    recipient_number=fabricator.phone_number,
+                    message=(
+                        f"Your reg. request has been {fstatus}.\n "
+                        f"{fabricator.name}\n "
+                        f"{fabricator.phone_number}\n "
+                        f"Reg. No: {fabricator.registration_number}\n "
+                        f"- STEELTECH"
+                    ),
+                )
+                if fabricator.marketing_representative:
+                    send_sms_via_cloudsms(
+                        recipient_number=fabricator.marketing_representative.phone_number,
+                        message=(
+                            f"Fabricator request {fstatus}.\n "
+                            f"{fabricator.name}\n "
+                            f"{fabricator.phone_number}\n "
+                            f"Reg. No.: {fabricator.registration_number}\n "                            
+                            f"- STEELTECH"
+                        ),
+                    )
+
             return JsonResponse(
                 {
                     "success": True,
