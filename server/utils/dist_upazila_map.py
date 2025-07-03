@@ -118,6 +118,7 @@ dist_upazila_map = {
     ],
     "Chuadanga": ["Damurhuda", "Alamdanga", "Chuadanga Sadar", "Jibon Nagar"],
     "Comilla": [
+        "Lalmai",        
         "Sadar Dakhkhin",
         "Comilla Sadar",
         "Debidder",
