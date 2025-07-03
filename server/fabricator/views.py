@@ -68,10 +68,10 @@ class FabricatorView(APIView):
                     send_sms_via_cloudsms(
                         recipient_number=fab_instance.marketing_representative.phone_number,
                         message=(
-                            f"Fabricator reg. request received.\n"
-                            f"{fab_instance.name}\n"
-                            f"{fab_instance.phone_number}\n"
-                            f"Reg. {fab_instance.registration_number}\n"                            
+                            f"Fabricator reg. request received.\n "
+                            f"{fab_instance.name}\n "
+                            f"{fab_instance.phone_number}\n "
+                            f"Reg. {fab_instance.registration_number}\n "
                             f"- STEELTECH"
                         ),
                     )
