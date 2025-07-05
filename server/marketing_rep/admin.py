@@ -17,4 +17,4 @@ class MarketingRepresentativeAdmin(admin.ModelAdmin):
     search_fields = ("name", "phone_number", "email", "district", "sub_district")
     list_filter = ("district", "sub_district")
     ordering = ("-created_at",)
-    list_per_page = 20
+    list_per_page = 100
