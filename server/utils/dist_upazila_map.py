@@ -65,9 +65,16 @@ dist_upazila_map = {
         "Shaghata",
         "Palasbari",
     ],
-    "Joypurhat": ["Joypurhat", "Joypurhat Sadar", "Akkelpur", "Panchbibi", "Kalai", "Khetlal"],
+    "Joypurhat": [
+        "Joypurhat",
+        "Joypurhat Sadar",
+        "Akkelpur",
+        "Panchbibi",
+        "Kalai",
+        "Khetlal",
+    ],
     "Nilphamari": [
-        "Nilphamari"
+        "Nilphamari",
         "Syedpur",
         "Domar",
         "Nilphamari Sadar",
@@ -75,7 +82,14 @@ dist_upazila_map = {
         "Dimla",
         "Jaldhaka",
     ],
-    "Panchagar": ["Panchagar","Panchagar Sadar", "Debigonj", "Boda", "Tetulia", "Atwari"],
+    "Panchagar": [
+        "Panchagar",
+        "Panchagar Sadar",
+        "Debigonj",
+        "Boda",
+        "Tetulia",
+        "Atwari",
+    ],
     "Bogra": [
         "Bogra",
         "Bogra Sadar",
@@ -105,7 +119,13 @@ dist_upazila_map = {
         "Porsha",
         "Dhamurhat",
     ],
-    "Chapai Nababgonj": ["Chapai Nababgonj", "Nababgonj Sadar", "Gomostapur", "Nachol", "Bholahat"],
+    "Chapai Nababgonj": [
+        "Chapai Nababgonj",
+        "Nababgonj Sadar",
+        "Gomostapur",
+        "Nachol",
+        "Bholahat",
+    ],
     "Rajshahi": [
         "Rajshahi",
         "Boalia ( Sadar)",
@@ -180,7 +200,7 @@ dist_upazila_map = {
         "Mohespur",
         "Shoilkupa",
     ],
-    "Narail": ["Narail","Lohagora (Narail)", "Narail Sadar", "Kalia", "Noragati"],
+    "Narail": ["Narail", "Lohagora (Narail)", "Narail Sadar", "Kalia", "Noragati"],
     "Bagerhat": [
         "Bagerhat",
         "Fakirhat",
@@ -210,8 +230,21 @@ dist_upazila_map = {
         "Dighalia",
         "Koyra",
     ],
-    "Magura": ["Magura","Magura Sadar", "Shreepur ( Magura)", "Mohammadpur (Magura)", "Salikha"],
-    "Rajbari": ["Rajbari","Rajbari Sadar", "Pangsa", "Baliakandi", "Goalando", "Kalukhali"],
+    "Magura": [
+        "Magura",
+        "Magura Sadar",
+        "Shreepur ( Magura)",
+        "Mohammadpur (Magura)",
+        "Salikha",
+    ],
+    "Rajbari": [
+        "Rajbari",
+        "Rajbari Sadar",
+        "Pangsa",
+        "Baliakandi",
+        "Goalando",
+        "Kalukhali",
+    ],
     "Faridpur": [
         "Faridpur",
         "Faridpur Sadar",
@@ -224,8 +257,14 @@ dist_upazila_map = {
         "Charbhadrasan",
         "Saltha",
     ],
-    "Meherpur": ["Meherpur","Meherpur Sadar", "Gangni", "Mozibnager"],
-    "Chuadanga": ["Chuadanga","Damurhuda", "Alamdanga", "Chuadanga Sadar", "Jibon Nagar"],
+    "Meherpur": ["Meherpur", "Meherpur Sadar", "Gangni", "Mozibnager"],
+    "Chuadanga": [
+        "Chuadanga",
+        "Damurhuda",
+        "Alamdanga",
+        "Chuadanga Sadar",
+        "Jibon Nagar",
+    ],
     "Kushtia": [
         "Kushtia",
         "Kushtia Sadar",
@@ -248,7 +287,7 @@ dist_upazila_map = {
         "Tala",
     ],
     "Barisal": [
-         "Barisal",
+        "Barisal",
         "Kotowali (Barisal)",
         "Gournodi",
         "Bakergonj",
@@ -276,9 +315,16 @@ dist_upazila_map = {
         "Shashivoshon",
         "Dakhin Aicha",
     ],
-    "Jhalakathi": [ "Jhalakathi","Jhalakathi Sadar", "Rajapur", "kathalia", "Nolchiti"],
-    "Gopalgonj": ["Gopalgonj", "Kotalipara", "Gopalgonj Sadar", "Tungipara", "Muksudpur", "Kasiani"],
-    "Madaripur": ["Madaripur","Sibchar", "Madaripur Sadar", "Rajor", "Kalkini"],
+    "Jhalakathi": ["Jhalakathi", "Jhalakathi Sadar", "Rajapur", "kathalia", "Nolchiti"],
+    "Gopalgonj": [
+        "Gopalgonj",
+        "Kotalipara",
+        "Gopalgonj Sadar",
+        "Tungipara",
+        "Muksudpur",
+        "Kasiani",
+    ],
+    "Madaripur": ["Madaripur", "Sibchar", "Madaripur Sadar", "Rajor", "Kalkini"],
     "Shariatpur": [
         "Shariatpur",
         "Palong (Sariatpur)",
@@ -289,7 +335,15 @@ dist_upazila_map = {
         "Gosairhat",
         "Shokipur",
     ],
-    "Barguna": ["Barguna", "Barguna Sadar", "Pathorghata", "Taltali", "Amtoli", "Betagi", "Bamna"],
+    "Barguna": [
+        "Barguna",
+        "Barguna Sadar",
+        "Pathorghata",
+        "Taltali",
+        "Amtoli",
+        "Betagi",
+        "Bamna",
+    ],
     "Patuakhali": [
         "Patuakhali",
         "Baofal",
@@ -312,7 +366,7 @@ dist_upazila_map = {
         "Zianagar",
     ],
     "Jamalpur": [
-        "Jamalpur", 
+        "Jamalpur",
         "Sarisabari",
         "Islampur",
         "Jamalpur Sadar",
@@ -321,7 +375,14 @@ dist_upazila_map = {
         "Melandah",
         "Madargonj",
     ],
-    "Sherpur": ["Sherpur", "Sherpur Sadar", "Nokhla", "Nolitabari", "Sreebordi", "Jhenaigati"],
+    "Sherpur": [
+        "Sherpur",
+        "Sherpur Sadar",
+        "Nokhla",
+        "Nolitabari",
+        "Sreebordi",
+        "Jhenaigati",
+    ],
     "Mymensingh": [
         "Mymensingh",
         "Mymensingh Sadar",
@@ -339,7 +400,7 @@ dist_upazila_map = {
         "Ishwargonj",
     ],
     "Tangail": [
-         "Tangail",
+        "Tangail",
         "Tangail Sadar",
         "Mirzapur",
         "Basail",
@@ -398,7 +459,7 @@ dist_upazila_map = {
         "Moddhonager",
     ],
     "Sylhet": [
-         "Sylhet"
+        "Sylhet",
         "Sylhet Sader",
         "Golapgonj",
         "Jokigonj",
@@ -416,7 +477,7 @@ dist_upazila_map = {
         "Balagonj",
     ],
     "B.Baria": [
-        "B.Baria", 
+        "B.Baria",
         "B.Baria Sadar",
         "Bancharampur",
         "Sorail",
@@ -658,7 +719,7 @@ dist_upazila_map = {
         "Kaligonj (Gazipur)",
     ],
     "Munshigonj": [
-        "Munshigonj", 
+        "Munshigonj",
         "Sirajdikhan",
         "Tongibari",
         "Sree Nagar",
@@ -677,7 +738,7 @@ dist_upazila_map = {
         "Bondor (N Gonj)",
     ],
     "Manikgonj": [
-        "Manikgonj"
+        "Manikgonj",
         "Manikgonj Sadar",
         "Saturia",
         "Singair",
@@ -687,7 +748,7 @@ dist_upazila_map = {
         "Sibaloy",
     ],
     "Narsingdi": [
-        "Narsingdi"
+        "Narsingdi",
         "Narsingdi Sadar",
         "Raipura",
         "Monohordi",
