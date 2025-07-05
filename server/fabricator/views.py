@@ -42,6 +42,7 @@ class FabricatorView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
+        print("Request Data:", request.data)
         if serializer.is_valid(raise_exception=True):
             with transaction.atomic():
                 fab_instance = serializer.save()
@@ -59,7 +60,8 @@ class FabricatorView(APIView):
                 send_sms_via_cloudsms(
                     recipient_number=fab_instance.phone_number,
                     message=(
-                        "Your registration request has been received. The administrator will review your registration request.\n - STEELTECH"
+                        f"Your registration request has been received. \nReg. {fab_instance.registration_number}\n"
+                        " The admin will review your request.\n - STEELTECH"
                     ),
                 )
 
