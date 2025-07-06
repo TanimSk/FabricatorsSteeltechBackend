@@ -194,6 +194,22 @@ class ReportsView(APIView):
             paginated_response = paginator.get_paginated_response(serializer.data)
             paginated_response.data.update(response_data)
             return paginated_response
+        
+        if request.query_params.get("view") == "all-fabricators":
+            fabricators = (
+                Fabricator.objects.filter(
+                    marketing_representative=request.user.marketingrepresentative,                    
+                )
+                .values(
+                    "id",
+                    "name",
+                    "institution",
+                    "registration_number",
+                    "status",
+                )
+                .order_by("name")
+            )
+            return Response(fabricators, status=status.HTTP_200_OK)
 
         if request.query_params.get("view") == "fabricators":
             fabricators = (
