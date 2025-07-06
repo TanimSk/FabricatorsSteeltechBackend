@@ -119,7 +119,8 @@ class FabricatorView(APIView):
 
             if search:
                 query = (
-                    Q(name__icontains=search)
+                    Q(institution__icontains=search)
+                    | Q(name__icontains=search)
                     | Q(registration_number__icontains=search)
                     | Q(district__icontains=search)
                     | Q(phone_number__icontains=search)
@@ -237,7 +238,7 @@ class FabricatorView(APIView):
                             f"Fabricator request {fstatus}.\n "
                             f"{fabricator.name}\n "
                             f"{fabricator.phone_number}\n "
-                            f"Reg. No.: {fabricator.registration_number}\n "                            
+                            f"Reg. No.: {fabricator.registration_number}\n "
                             f"- STEELTECH"
                         ),
                     )
