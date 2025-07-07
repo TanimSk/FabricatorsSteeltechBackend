@@ -749,6 +749,7 @@ dist_upazila_map = {
     ],
     "Narsingdi": [
         "Narsingdi",
+        "Madhabdi",
         "Narsingdi Sadar",
         "Raipura",
         "Monohordi",
