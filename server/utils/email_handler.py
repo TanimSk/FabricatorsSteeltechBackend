@@ -166,29 +166,55 @@ def fab_registered_notification(
 
 def fab_status_change_notification(
     fab_name: str,
+    market_rep_name: str,
     phone_number: str,
     registration_number: str,
     status: str,
     date: str,
     fab_email: str,
+    marketing_rep_email: str = None,
 ):
     if status not in ["approved", "rejected"]:
         return
 
-    html_content = render_to_string(
-        "fabricator_status.html",
-        {
-            "fab_name": fab_name,
-            "phone_number": phone_number,
-            "registration_number": registration_number,
-            "status": status,
-            "date": date,
-        },
-    )
-    subject = "Status update - Steeltech"
-    EmailThread(
-        subject,
-        html_content,
-        [fab_email],
-        DEFAULT_FROM_EMAIL,
-    ).start()
+    if fab_email:
+        # send to fabricator
+        html_content = render_to_string(
+            "fabricator_status.html",
+            {
+                "name": fab_name,
+                "fab_name": fab_name,
+                "phone_number": phone_number,
+                "registration_number": registration_number,
+                "status": status,
+                "date": date,
+            },
+        )
+        subject = "Status update - Steeltech"
+        EmailThread(
+            subject,
+            html_content,
+            [fab_email],
+            DEFAULT_FROM_EMAIL,
+        ).start()
+
+    if marketing_rep_email:
+        # send to marketing representative
+        html_content = render_to_string(
+            "fabricator_status.html",
+            {
+                "name": market_rep_name,
+                "fab_name": fab_name,
+                "phone_number": phone_number,
+                "registration_number": registration_number,
+                "status": status,
+                "date": date,
+            },
+        )
+        subject = "Fabricator Status Update - Steeltech"
+        EmailThread(
+            subject,
+            html_content,
+            [marketing_rep_email],
+            DEFAULT_FROM_EMAIL,
+        ).start()

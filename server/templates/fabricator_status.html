@@ -78,13 +78,16 @@
         </div>
         <div class="title">Steeltech Fabricator Status Update</div>
         <div class="content">
-            <p>Hello {{ fab_name }},</p>
+            <p>Hello {{ name }},</p>
             {% if status == 'approved' %}
             <p>Congratulations! Your registration request has been approved.</p>
             {% elif status == 'rejected' %}
             <p>Unfortunately, your registration request has been rejected. Please contact support for more details.</p>
             {% endif %}
         </div>
+        <h3>
+            Fabricator Details
+        </h3>
         <div class="credentials">
             <b>Name:</b> {{ fab_name }}<br>
             <b>Phone Number:</b> {{ phone_number }}<br>
