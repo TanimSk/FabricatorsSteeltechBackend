@@ -157,8 +157,8 @@ def fab_registered_notification(
         subject,
         html_content,
         [
-            "ridwan@ongshak.com",
-            "sktanim5800+admin@gmail.com",
+            "ridwan@ongshak.com",            
+            "arafat@steeltech-bd.com",
         ],
         DEFAULT_FROM_EMAIL,
     ).start()
