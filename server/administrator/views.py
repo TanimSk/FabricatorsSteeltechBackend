@@ -914,6 +914,28 @@ class ReportView(APIView):
     permission_classes = [AuthenticateOnlyAdmin]
 
     def get(self, request, *args, **kwargs):
+        if request.query_params.get("view") == "marketing-rep-and-fabricator":
+            if request.query_params.get("id"):
+                try:
+                    fabricator = Fabricator.objects.get(
+                        id=request.query_params.get("id")
+                    )
+                except Fabricator.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": "Fabricator not found."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                serializer = MarketingRepAndFabricatorSerializer(fabricator)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            fabricators = Fabricator.objects.filter(
+                marketing_representative__isnull=False
+            ).order_by("marketing_representative__name")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(fabricators, request)
+            serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         if request.query_params.get("id"):
             report_id = request.query_params.get("id")
             try:
@@ -989,15 +1011,6 @@ class ReportView(APIView):
                     "fabricator_sub_district",
                 ],
             )
-            return paginator.get_paginated_response(serializer.data)
-
-        elif request.query_params.get("view") == "marketing-rep-and-fabricator":
-            fabricators = Fabricator.objects.filter(
-                marketing_representative__isnull=False
-            ).order_by("marketing_representative__name")
-            paginator = StandardResultsSetPagination()
-            result_page = paginator.paginate_queryset(fabricators, request)
-            serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
 
         elif request.query_params.get("view") == "summary":
