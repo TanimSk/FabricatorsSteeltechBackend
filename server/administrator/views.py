@@ -1405,6 +1405,10 @@ class ReportView(APIView):
 
             return response
 
+        return JsonResponse(
+            {"success": False, "message": "Invalid action parameter."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 class SubDistrictView(APIView):
     def get(self, request, *args, **kwargs):
