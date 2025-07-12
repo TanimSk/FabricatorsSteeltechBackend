@@ -55,7 +55,7 @@ class CustomPasswordChangeSerializer(serializers.Serializer):
         return value
 
 
-class MarketingRepAndFabricatorSerializer(serializers.Serializer):
+class MarketingRepAndFabricatorSerializer(serializers.ModelSerializer):
     marketing_rep_name = serializers.CharField(source="marketing_representative.name")
     marketing_rep_phone_number = serializers.CharField(
         source="marketing_representative.phone_number"
@@ -66,5 +66,5 @@ class MarketingRepAndFabricatorSerializer(serializers.Serializer):
     sub_district = serializers.CharField(source="marketing_representative.sub_district")
 
     class Meta:
-        fields = "__all__"
         model = Fabricator
+        fields = "__all__"
