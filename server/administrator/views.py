@@ -1192,7 +1192,7 @@ class ReportView(APIView):
 
                 return response
 
-        if request.query_params.get("action") == "marketing-rep-and-fabricator":
+        if request.query_params.get("view") == "marketing-rep-and-fabricator":
             fabricators = Fabricator.objects.filter(
                 marketing_representative__isnull=False
             ).order_by("marketing_representative__name")
