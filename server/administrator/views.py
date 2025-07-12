@@ -1222,7 +1222,7 @@ class ReportView(APIView):
                         fabricator["district"],
                         fabricator["sub_district"],
                         fabricator["email"],
-                        fabricator["fabricator_name"],
+                        fabricator["name"],
                         fabricator["registration_number"],
                         fabricator["institution"],
                         fabricator["district"],
