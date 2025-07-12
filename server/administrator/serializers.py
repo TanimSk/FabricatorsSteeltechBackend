@@ -6,6 +6,8 @@ import json
 from rest_framework.views import exception_handler
 
 # models
+from marketing_rep.models import MarketingRepresentative
+from fabricator.models import Fabricator
 
 
 def custom_exception_handler(exc, context):
@@ -51,3 +53,18 @@ class CustomPasswordChangeSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Old password is incorrect.")
         return value
+
+
+class MarketingRepAndFabricatorSerializer(serializers.Serializer):
+    marketing_rep_name = serializers.CharField(source="marketing_representative.name")
+    marketing_rep_phone_number = serializers.CharField(
+        source="marketing_representative.phone_number"
+    )
+    employee_id = serializers.CharField(source="marketing_representative.employee_id")
+    email = serializers.EmailField(source="marketing_representative.email")
+    district = serializers.CharField(source="marketing_representative.district")
+    sub_district = serializers.CharField(source="marketing_representative.sub_district")
+
+    class Meta:
+        fields = "__all__"
+        model = Fabricator

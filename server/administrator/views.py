@@ -38,6 +38,7 @@ from marketing_rep.serializers import (
     ReportsSerializer,
     TaskSerializer,
 )
+from administrator.serializers import MarketingRepAndFabricatorSerializer
 from distributor.serializers import DistributorSerializer, SingleDistributorSerializer
 from utils.sms_handler import send_sms_via_cloudsms
 from utils.email_handler import (
@@ -943,10 +944,12 @@ class ReportView(APIView):
                 )
 
         if request.query_params.get("view") == "fabricators":
-            report = Reports.objects.all().order_by("-sales_date")
+            report = Reports.objects.all()
 
             if from_date and to_date:
                 report = report.filter(sales_date__range=(from_date, to_date))
+
+            report = report.order_by("-sales_date")
 
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(report, request)
@@ -962,11 +965,16 @@ class ReportView(APIView):
             )
             return paginator.get_paginated_response(serializer.data)
 
-        elif request.query_params.get("view") == "marketing_representatives":
-            report = Reports.objects.all().order_by("-sales_date")
+        elif (
+            request.query_params.get("view") == "distributor"
+            or request.query_params.get("view") == "marketing_representatives"
+        ):
+            report = Reports.objects.all()
 
             if from_date and to_date:
                 report = report.filter(sales_date__range=(from_date, to_date))
+
+            report = report.order_by("-sales_date")
 
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(report, request)
@@ -981,6 +989,15 @@ class ReportView(APIView):
                     "fabricator_sub_district",
                 ],
             )
+            return paginator.get_paginated_response(serializer.data)
+
+        elif request.query_params.get("view") == "marketing-rep-and-fabricator":
+            fabricators = Fabricator.objects.filter(
+                marketing_representative__isnull=False
+            ).order_by("marketing_representative__name")
+            paginator = StandardResultsSetPagination()
+            result_page = paginator.paginate_queryset(fabricators, request)
+            serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
 
         elif request.query_params.get("view") == "summary":
@@ -1123,7 +1140,10 @@ class ReportView(APIView):
                 return response
 
             # TODO: its actually distributors
-            elif request.query_params.get("view") == "marketing_representatives":
+            elif (
+                request.query_params.get("view") == "marketing_representatives"
+                or request.query_params.get("view") == "distributor"
+            ):
                 reports = Reports.objects.all().order_by("-sales_date")
                 if from_date and to_date:
                     reports = reports.filter(sales_date__range=(from_date, to_date))
@@ -1153,6 +1173,46 @@ class ReportView(APIView):
                     )
 
                 return response
+
+        if request.query_params.get("action") == "marketing-rep-and-fabricator":
+            fabricators = Fabricator.objects.filter(
+                marketing_representative__isnull=False
+            ).order_by("marketing_representative__name")
+            serializer = MarketingRepAndFabricatorSerializer(fabricators, many=True)
+            writer.writerow(
+                [
+                    "Marketing Representative",
+                    "Phone Number",
+                    "Employee ID",
+                    "District",
+                    "Thana",
+                    "email",
+                    "Fabricator",
+                    "Registration Number",
+                    "Institution",
+                    "District",
+                    "Thana",
+                    "Status",
+                ]
+            )
+            for fabricator in serializer.data:
+                writer.writerow(
+                    [
+                        fabricator["marketing_rep_name"],
+                        fabricator["marketing_rep_phone_number"],
+                        fabricator["employee_id"],
+                        fabricator["district"],
+                        fabricator["sub_district"],
+                        fabricator["email"],
+                        fabricator["fabricator_name"],
+                        fabricator["registration_number"],
+                        fabricator["institution"],
+                        fabricator["district"],
+                        fabricator["sub_district"],
+                        fabricator["status"],
+                    ]
+                )
+            return response
 
         if request.query_params.get("view") == "summary":
             # Individual subqueries for each distributor field
