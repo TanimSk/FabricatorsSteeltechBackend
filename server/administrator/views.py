@@ -928,9 +928,24 @@ class ReportView(APIView):
                 serializer = MarketingRepAndFabricatorSerializer(fabricator)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
-            fabricators = Fabricator.objects.filter(
-                marketing_representative__isnull=False
-            ).order_by("marketing_representative__name")
+            if request.query_params.get("marketing-rep-id"):
+                try:
+                    mar = MarketingRepresentative.objects.get(
+                        id=request.query_params.get("marketing-rep-id")
+                    )
+                except MarketingRepresentative.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": "Marketing Rep not found."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                fabricators = Fabricator.objects.filter(
+                    marketing_representative=mar
+                ).order_by("marketing_representative__name")
+            else:
+                fabricators = Fabricator.objects.filter(
+                    marketing_representative__isnull=False
+                ).order_by("marketing_representative__name")
+
             paginator = StandardResultsSetPagination()
             result_page = paginator.paginate_queryset(fabricators, request)
             serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
@@ -939,7 +954,15 @@ class ReportView(APIView):
             if not request.query_params.get("page_size"):
                 paginator.page_size = 20
 
-            return paginator.get_paginated_response(serializer.data)
+            return Response(
+                {
+                    "approved": fabricators.filter(status="approved").count(),
+                    "pending": fabricators.filter(status="pending").count(),
+                    "rejected": fabricators.filter(status="rejected").count(),
+                    "data": paginator.get_paginated_response(serializer.data).data,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         if request.query_params.get("id"):
             report_id = request.query_params.get("id")
@@ -1193,9 +1216,25 @@ class ReportView(APIView):
                 return response
 
         if request.query_params.get("view") == "marketing-rep-and-fabricator":
-            fabricators = Fabricator.objects.filter(
-                marketing_representative__isnull=False
-            ).order_by("marketing_representative__name")
+            if request.query_params.get("marketing-rep-id"):
+                try:
+                    mar = MarketingRepresentative.objects.get(
+                        id=request.query_params.get("marketing-rep-id")
+                    )
+                except MarketingRepresentative.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": "Marketing Rep not found."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                fabricators = Fabricator.objects.filter(
+                    marketing_representative=mar
+                ).order_by("marketing_representative__name")
+
+            else:
+                fabricators = Fabricator.objects.filter(
+                    marketing_representative__isnull=False
+                ).order_by("marketing_representative__name")
+
             serializer = MarketingRepAndFabricatorSerializer(fabricators, many=True)
             writer.writerow(
                 [
@@ -1409,6 +1448,7 @@ class ReportView(APIView):
             {"success": False, "message": "Invalid action parameter."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 class SubDistrictView(APIView):
     def get(self, request, *args, **kwargs):
