@@ -62,8 +62,8 @@ class MarketingRepAndFabricatorSerializer(serializers.ModelSerializer):
     )
     employee_id = serializers.CharField(source="marketing_representative.employee_id")
     email = serializers.EmailField(source="marketing_representative.email")
-    district = serializers.CharField(source="marketing_representative.district")
-    sub_district = serializers.CharField(source="marketing_representative.sub_district")
+    marketing_rep_district = serializers.CharField(source="marketing_representative.district")
+    marketing_rep_sub_district = serializers.CharField(source="marketing_representative.sub_district")
 
     class Meta:
         model = Fabricator
