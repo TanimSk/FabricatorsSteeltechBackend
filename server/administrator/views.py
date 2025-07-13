@@ -972,10 +972,7 @@ class ReportView(APIView):
                     "approved": fabricators.filter(status="approved").count(),
                     "pending": fabricators.filter(status="pending").count(),
                     "rejected": fabricators.filter(status="rejected").count(),
-                    "data": {
-                        "page_size": paginator.page_size,
-                        **paginator.get_paginated_response(serializer.data).data,
-                    },
+                    "data": paginator.get_paginated_response(serializer.data).data,
                 },
                 status=status.HTTP_200_OK,
             )
