@@ -44,6 +44,16 @@ class FabricatorView(APIView):
         serializer = self.serializer_class(data=request.data)
         print("Request Data:", request.data)
         if serializer.is_valid(raise_exception=True):
+            # check if phone number already exists
+            if Fabricator.objects.filter(phone_number=serializer.validated_data["phone_number"]).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Fabricator with this phone number already exists.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             with transaction.atomic():
                 fab_instance = serializer.save()
 
