@@ -947,12 +947,12 @@ class ReportView(APIView):
                 ).order_by("marketing_representative__name")
 
             paginator = StandardResultsSetPagination()
-            result_page = paginator.paginate_queryset(fabricators, request)
-            serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
-
             # set page size if not set in parameters
             if not request.query_params.get("page_size"):
                 paginator.page_size = 20
+
+            result_page = paginator.paginate_queryset(fabricators, request)
+            serializer = MarketingRepAndFabricatorSerializer(result_page, many=True)
 
             return Response(
                 {
