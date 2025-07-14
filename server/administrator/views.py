@@ -923,7 +923,7 @@ class UploadFile(APIView):
 
             return Response(
                 {"success": False, "message": response.text},
-                status=response.status_code,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
