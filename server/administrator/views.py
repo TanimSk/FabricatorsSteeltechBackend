@@ -916,6 +916,11 @@ class UploadFile(APIView):
 
         print(response.text)
         if response.status_code != 200:
+            # log the error in file
+            print(f"Error uploading file: {response.text}")
+            with open("errors.log", "a") as log_file:
+                log_file.write(f"{timezone.now()}: {response.text}\n")
+
             return Response(
                 {"success": False, "message": response.text},
                 status=response.status_code,

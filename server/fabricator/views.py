@@ -103,6 +103,9 @@ class FabricatorView(APIView):
             print(
                 e.detail
             )  # This will contain the same error the middleware will catch
+            # write the error in a file
+            with open("errors.log", "a") as log_file:
+                log_file.write(f"{timezone.now()}: {e.detail}\n")
             raise  # Re-raise so middleware catches it and formats it
 
     def get(self, request, *args, **kwargs):
