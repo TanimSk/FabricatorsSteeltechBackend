@@ -40,6 +40,9 @@ class ReportsSerializer(serializers.ModelSerializer):
 
     # fabricator
     fabricator_name = serializers.CharField(source="fabricator.name", read_only=True)
+    fabricator_institution = serializers.CharField(
+        source="fabricator.institution", read_only=True
+    )
     fabricator_registration_number = serializers.CharField(
         source="fabricator.registration_number", read_only=True
     )

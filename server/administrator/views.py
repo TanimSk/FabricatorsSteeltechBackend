@@ -1046,6 +1046,7 @@ class ReportView(APIView):
                 many=True,
                 hide_fields=[
                     "fabricator_name",
+                    "fabricator_institution",
                     "fabricator_registration_number",
                     "fabricator_phone_number",
                     "fabricator_district",
