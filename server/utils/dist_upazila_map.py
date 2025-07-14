@@ -602,8 +602,9 @@ dist_upazila_map = {
         "Double Mooring",
         "Kornafuly",
     ],
-    "Cox's Bazar": [
+    "Cox's Bazar": [        
         "Cox's Bazar",
+        "Eidgaon",
         "Ramu",
         "Cox's Bazar Sadar",
         "Chokoria",
