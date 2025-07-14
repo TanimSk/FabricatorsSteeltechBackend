@@ -11,7 +11,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db import transaction
-
+from rest_framework.exceptions import ValidationError
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -43,59 +43,67 @@ class FabricatorView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         print("Request Data:", request.data)
-        if serializer.is_valid(raise_exception=True):
-            # check if phone number already exists
-            if Fabricator.objects.filter(phone_number=serializer.validated_data["phone_number"]).exists():
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Fabricator with this phone number already exists.",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        try:
+            if serializer.is_valid(raise_exception=True):
+                # check if phone number already exists
+                if Fabricator.objects.filter(
+                    phone_number=serializer.validated_data["phone_number"]
+                ).exists():
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "Fabricator with this phone number already exists.",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            with transaction.atomic():
-                fab_instance = serializer.save()
+                with transaction.atomic():
+                    fab_instance = serializer.save()
 
-                # send email notification to admin
-                fab_registered_notification(
-                    fab_name=fab_instance.name,
-                    fab_phone_number=fab_instance.phone_number,
-                    fab_registration_number=fab_instance.registration_number,
-                    fab_district=fab_instance.district,
-                    fab_sub_district=fab_instance.sub_district,
-                )
+                    # send email notification to admin
+                    fab_registered_notification(
+                        fab_name=fab_instance.name,
+                        fab_phone_number=fab_instance.phone_number,
+                        fab_registration_number=fab_instance.registration_number,
+                        fab_district=fab_instance.district,
+                        fab_sub_district=fab_instance.sub_district,
+                    )
 
-                # send SMS to the fabricator
-                send_sms_via_cloudsms(
-                    recipient_number=fab_instance.phone_number,
-                    message=(
-                        f"Your registration request has been received. \nReg. {fab_instance.registration_number}\n"
-                        " The admin will review your request.\n - STEELTECH"
-                    ),
-                )
-
-                # send SMS to the marketing representative if exists
-                if fab_instance.marketing_representative:
+                    # send SMS to the fabricator
                     send_sms_via_cloudsms(
-                        recipient_number=fab_instance.marketing_representative.phone_number,
+                        recipient_number=fab_instance.phone_number,
                         message=(
-                            f"Fabricator reg. request received.\n "
-                            f"{fab_instance.name}\n "
-                            f"{fab_instance.phone_number}\n "
-                            f"Reg. {fab_instance.registration_number}\n "
-                            f"- STEELTECH"
+                            f"Your registration request has been received. \nReg. {fab_instance.registration_number}\n"
+                            " The admin will review your request.\n - STEELTECH"
                         ),
                     )
 
-            return Response(
-                {
-                    "success": True,
-                    "message": "Fabricator created successfully.",
-                    **serializer.data,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+                    # send SMS to the marketing representative if exists
+                    if fab_instance.marketing_representative:
+                        send_sms_via_cloudsms(
+                            recipient_number=fab_instance.marketing_representative.phone_number,
+                            message=(
+                                f"Fabricator reg. request received.\n "
+                                f"{fab_instance.name}\n "
+                                f"{fab_instance.phone_number}\n "
+                                f"Reg. {fab_instance.registration_number}\n "
+                                f"- STEELTECH"
+                            ),
+                        )
+
+                return Response(
+                    {
+                        "success": True,
+                        "message": "Fabricator created successfully.",
+                        **serializer.data,
+                    },
+                    status=status.HTTP_201_CREATED,
+                )
+        except ValidationError as e:
+            print(
+                e.detail
+            )  # This will contain the same error the middleware will catch
+            raise  # Re-raise so middleware catches it and formats it
 
     def get(self, request, *args, **kwargs):
         if request.query_params.get("view") == "distributor":
