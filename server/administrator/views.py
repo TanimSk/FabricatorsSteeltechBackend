@@ -1180,11 +1180,13 @@ class ReportView(APIView):
                 writer.writerow(
                     [
                         "Fabricator Name",
+                        "Institution",
                         "Registration Number",
                         "Phone Number",
                         "District",
                         "Sub-District",
                         "Sales Date",
+                        "Distributor Name",
                         "Amount",
                         "Invoice Number",
                     ]
@@ -1194,11 +1196,13 @@ class ReportView(APIView):
                     writer.writerow(
                         [
                             report.fabricator.name,
+                            report.fabricator.institution,
                             report.fabricator.registration_number,
                             report.fabricator.phone_number,
                             report.fabricator.district,
                             report.fabricator.sub_district,
                             report.sales_date.strftime("%Y-%m-%d"),
+                            report.distributor.name,
                             report.amount,
                             report.invoice_number,
                         ]
