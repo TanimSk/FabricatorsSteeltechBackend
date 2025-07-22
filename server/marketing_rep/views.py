@@ -219,7 +219,7 @@ class ReportsView(APIView):
                 )
                 .values(
                     "id",
-                    "name",
+                    "institution",
                     "registration_number",
                 )
                 .order_by("name")
