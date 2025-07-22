@@ -14,7 +14,6 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
-from django.db.models import F
 import csv
 from decimal import Decimal
 
@@ -217,9 +216,6 @@ class ReportsView(APIView):
                 Fabricator.objects.filter(
                     marketing_representative=request.user.marketingrepresentative,
                     status="approved",
-                )
-                .annotate(
-                    name=F("institution"),
                 )
                 .values(
                     "id",
