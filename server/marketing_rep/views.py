@@ -227,7 +227,7 @@ class ReportsView(APIView):
             fabricators = [
                 {
                     "id": f["id"],
-                    "name": f["institution"],
+                    "name": f'{f["institution"]}\n{f["registration_number"]}',
                     "registration_number": f["registration_number"],
                 }
                 for f in fabricators
